@@ -1,0 +1,278 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Examples</title>
+<link rel="stylesheet" href="http://www.boost.org/doc/libs/1_55_0/doc/src/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
+<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
+<link rel="prev" href="design_rationale.html" title="Design Rationale">
+<link rel="next" href="reference.html" title="Reference">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="spirit-nav">
+<a accesskey="p" href="design_rationale.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reference.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="double_ended.examples"></a><a class="link" href="examples.html" title="Examples">Examples</a>
+</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="examples.html#double_ended.examples.devector_usage">devector usage</a></span></dt>
+<dt><span class="section"><a href="examples.html#double_ended.examples.batch_deque_usage">batch_deque
+      usage</a></span></dt>
+</dl></div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="double_ended.examples.devector_usage"></a><a class="link" href="examples.html#double_ended.examples.devector_usage" title="devector usage">devector usage</a>
+</h3></div></div></div>
+<p>
+        The <code class="computeroutput"><span class="identifier">devector</span></code> class template,
+        along the standard vector features, also offers a few extra. The small buffer
+        optimization allows some elements to be stored next to the <code class="computeroutput"><span class="identifier">devector</span></code> internals, without allocating
+        extra memory. If the size of the <code class="computeroutput"><span class="identifier">devector</span></code>
+        exceeds the size of the small buffer, elements previously held in the small
+        buffer are copied to dynamically allocated buffer, the small buffer remains
+        unused: The memory is always contiguous. The size of the small buffer must
+        be set by the <code class="computeroutput"><span class="identifier">SmallBufferPolicy</span></code>
+        template argument. If it's set to 0, no small buffer is used.
+      </p>
+<pre class="programlisting"><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">devector_small_buffer_policy</span><span class="special">&lt;</span><span class="number">16</span><span class="special">&gt;&gt;</span> <span class="identifier">small_devector</span><span class="special">{</span><span class="number">1</span><span class="special">,</span> <span class="number">2</span><span class="special">,</span> <span class="number">3</span><span class="special">,</span> <span class="number">4</span><span class="special">};</span>
+<span class="identifier">small_devector</span><span class="special">.</span><span class="identifier">push_back</span><span class="special">(</span><span class="number">5</span><span class="special">);</span>
+<span class="identifier">small_devector</span><span class="special">.</span><span class="identifier">push_back</span><span class="special">(</span><span class="number">6</span><span class="special">);</span>
+<span class="identifier">small_devector</span><span class="special">.</span><span class="identifier">push_back</span><span class="special">(</span><span class="number">7</span><span class="special">);</span>
+<span class="comment">// no dynamic memory allocated</span>
+</pre>
+<p>
+        The small buffer optimization makes the <code class="computeroutput"><span class="identifier">devector</span></code>
+        a good candidate of a buffer. It is safer and more flexible than a C style
+        array or <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">array</span></code>, because it manages its size and
+        memory, and it's just as performant: while using the small buffer, no dynamic
+        memory allocation happens.
+      </p>
+<p>
+        In the above example, if <code class="computeroutput"><span class="identifier">push_front</span></code>
+        was used instead of <code class="computeroutput"><span class="identifier">push_back</span></code>,
+        allocation would happen: Push operations do not shift elements to avoid breaking
+        the promise of <code class="computeroutput"><span class="identifier">reserve</span></code>. If
+        you want shifting, use <code class="computeroutput"><span class="identifier">insert</span></code>
+        instead.
+      </p>
+<p>
+        In contrast with the standard vector, <code class="computeroutput"><span class="identifier">devector</span></code>
+        allows reserving construction time. This is especially important when both
+        front and back pushes are anticipated. In the following example, only a single
+        allocation is required, no reallocation happens:
+      </p>
+<pre class="programlisting"><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">reserved_devector</span><span class="special">(</span><span class="number">32</span><span class="special">,</span> <span class="number">16</span><span class="special">,</span> <span class="identifier">reserve_only_tag</span><span class="special">{});</span>
+
+<span class="keyword">for</span> <span class="special">(</span><span class="keyword">int</span> <span class="identifier">i</span> <span class="special">=</span> <span class="number">0</span><span class="special">;</span> <span class="identifier">i</span> <span class="special">&lt;</span> <span class="number">32</span><span class="special">;</span> <span class="special">++</span><span class="identifier">i</span><span class="special">)</span> <span class="special">{</span>
+  <span class="identifier">reserved_devector</span><span class="special">.</span><span class="identifier">push_front</span><span class="special">(</span><span class="identifier">i</span><span class="special">);</span>
+<span class="special">}</span>
+
+<span class="keyword">for</span> <span class="special">(</span><span class="keyword">int</span> <span class="identifier">i</span> <span class="special">=</span> <span class="number">0</span><span class="special">;</span> <span class="identifier">i</span> <span class="special">&lt;</span> <span class="number">16</span><span class="special">;</span> <span class="special">++</span><span class="identifier">i</span><span class="special">)</span> <span class="special">{</span>
+  <span class="identifier">reserved_devector</span><span class="special">.</span><span class="identifier">push_back</span><span class="special">(</span><span class="identifier">i</span><span class="special">);</span>
+<span class="special">}</span>
+</pre>
+<p>
+        The pace how standard vector grows its buffer is not fixed by the standard,
+        it's an implementation detail. If you want a platform independent, custom
+        behavior for <code class="computeroutput"><span class="identifier">devector</span></code>, specify
+        a <code class="computeroutput"><span class="identifier">GrowthPolicy</span></code>:
+      </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">custom_growth_policy</span>
+<span class="special">{</span>
+  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">unsigned</span> <span class="identifier">growth_factor</span> <span class="special">=</span> <span class="number">2u</span><span class="special">;</span>
+  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">unsigned</span> <span class="identifier">initial_size</span> <span class="special">=</span> <span class="number">16u</span><span class="special">;</span>
+
+  <span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="identifier">new_capacity</span><span class="special">(</span><span class="keyword">unsigned</span> <span class="identifier">capacity</span><span class="special">)</span>
+  <span class="special">{</span>
+    <span class="keyword">return</span> <span class="special">(</span><span class="identifier">capacity</span><span class="special">)</span> <span class="special">?</span> <span class="identifier">capacity</span> <span class="special">*</span> <span class="identifier">growth_factor</span> <span class="special">:</span> <span class="identifier">initial_size</span><span class="special">;</span>
+  <span class="special">}</span>
+
+  <span class="keyword">static</span> <span class="keyword">bool</span> <span class="identifier">should_shrink</span><span class="special">(</span><span class="keyword">unsigned</span> <span class="identifier">size</span><span class="special">,</span> <span class="keyword">unsigned</span> <span class="identifier">capacity</span><span class="special">,</span> <span class="keyword">unsigned</span> <span class="identifier">small_buffer_size</span><span class="special">)</span>
+  <span class="special">{</span>
+    <span class="special">(</span><span class="keyword">void</span><span class="special">)</span><span class="identifier">capacity</span><span class="special">;</span>
+    <span class="keyword">return</span> <span class="identifier">size</span> <span class="special">&lt;=</span> <span class="identifier">small_buffer_size</span><span class="special">;</span>
+  <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">double_ended</span><span class="special">;</span>
+
+<span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">devector_small_buffer_policy</span><span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;,</span> <span class="identifier">custom_growth_policy</span><span class="special">&gt;</span> <span class="identifier">custom_growth_devector</span><span class="special">;</span>
+</pre>
+<p>
+        Here, the initial capacity of a non-empty devector will be at least 16 (<code class="computeroutput"><span class="identifier">initial_size</span></code>). For example: on the first
+        <code class="computeroutput"><span class="identifier">push_back</span></code>, memory for 16
+        elements will be allocated. According to the specified growth policy, the
+        internal storage is doubled every time the <code class="computeroutput"><span class="identifier">devector</span></code>
+        runs out of memory (<code class="computeroutput"><span class="identifier">growth_factor</span></code>).
+      </p>
+<p>
+        When <code class="computeroutput"><span class="identifier">shrink_to_fit</span></code> is called,
+        first the <code class="computeroutput"><span class="identifier">should_shrink</span></code> method
+        of the growth policy is consulted with. Only if it returns true, can a shrink
+        happen. Here, the policy allows shrinking only if the contents of the <code class="computeroutput"><span class="identifier">devector</span></code> can fit in the small buffer.
+      </p>
+<p>
+        Among the several usecases, a simple one is reversing an input range in one
+        go while doing as few allocations as possible. In the following example,
+        input lines are pushed to the front of the buffer, thus automatically forming
+        a reverse order.
+      </p>
+<pre class="programlisting"><span class="identifier">devector</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;</span> <span class="identifier">reversed_lines</span><span class="special">;</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">line</span><span class="special">;</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">getline</span><span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">cin</span><span class="special">,</span> <span class="identifier">line</span><span class="special">);</span>
+
+<span class="keyword">while</span> <span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">cin</span><span class="special">)</span>
+<span class="special">{</span>
+  <span class="identifier">reversed_lines</span><span class="special">.</span><span class="identifier">push_front</span><span class="special">(</span><span class="identifier">line</span><span class="special">);</span>
+  <span class="identifier">std</span><span class="special">::</span><span class="identifier">getline</span><span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">cin</span><span class="special">,</span> <span class="identifier">line</span><span class="special">);</span>
+<span class="special">}</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"Reversed lines:\n"</span><span class="special">;</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">copy</span><span class="special">(</span>
+  <span class="identifier">reversed_lines</span><span class="special">.</span><span class="identifier">begin</span><span class="special">(),</span> <span class="identifier">reversed_lines</span><span class="special">.</span><span class="identifier">end</span><span class="special">(),</span>
+  <span class="identifier">std</span><span class="special">::</span><span class="identifier">ostream_iterator</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span><span class="special">,</span> <span class="string">"\n"</span><span class="special">)</span>
+<span class="special">);</span>
+</pre>
+<p>
+        The <code class="computeroutput"><span class="identifier">devector</span></code> is more trusting
+        than the standard containers: it allows the programmer to use (potentially)
+        unsafe methods. The most simple are the <code class="computeroutput"><span class="identifier">unsafe_push_front</span></code>
+        and <code class="computeroutput"><span class="identifier">unsafe_push_back</span></code> methods.
+        They are similar to the safe versions, but here, the caller must make sure
+        the required free capacity is present before calling them. The benefit: avoiding
+        a check, thus sparing a few instructions.
+      </p>
+<pre class="programlisting"><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">dv</span><span class="special">;</span>
+<span class="identifier">dv</span><span class="special">.</span><span class="identifier">reserve_front</span><span class="special">(</span><span class="number">2</span><span class="special">);</span>
+<span class="identifier">dv</span><span class="special">.</span><span class="identifier">reserve_back</span><span class="special">(</span><span class="number">2</span><span class="special">);</span> <span class="comment">// the previous reserve_front is still in effect</span>
+
+<span class="identifier">dv</span><span class="special">.</span><span class="identifier">unsafe_push_front</span><span class="special">(</span><span class="number">2</span><span class="special">);</span>
+<span class="identifier">dv</span><span class="special">.</span><span class="identifier">unsafe_push_front</span><span class="special">(</span><span class="number">1</span><span class="special">);</span>
+<span class="identifier">dv</span><span class="special">.</span><span class="identifier">unsafe_push_back</span><span class="special">(</span><span class="number">3</span><span class="special">);</span>
+<span class="identifier">dv</span><span class="special">.</span><span class="identifier">unsafe_push_back</span><span class="special">(</span><span class="number">4</span><span class="special">);</span>
+</pre>
+<p>
+        Another unsafe, but efficient construct is placing uninitialized elements
+        into the sequence. In the example below, data is read from a socket and copied
+        directly to the <code class="computeroutput"><span class="identifier">devector</span></code>
+        buffer:
+      </p>
+<pre class="programlisting"><span class="comment">// int sockfd = socket(...); connect(...);</span>
+<span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="identifier">buffer</span><span class="special">(</span><span class="number">256</span><span class="special">,</span> <span class="identifier">unsafe_uninitialized_tag</span><span class="special">{});</span>
+<span class="identifier">ssize_t</span> <span class="identifier">recvSize</span> <span class="special">=</span> <span class="identifier">recv</span><span class="special">(</span><span class="identifier">sockfd</span><span class="special">,</span> <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">data</span><span class="special">(),</span> <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">size</span><span class="special">(),</span> <span class="number">0</span><span class="special">);</span>
+
+<span class="keyword">if</span> <span class="special">(</span><span class="identifier">recvSize</span> <span class="special">&gt;=</span> <span class="number">0</span><span class="special">)</span>
+<span class="special">{</span>
+  <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">unsafe_uninitialized_resize_back</span><span class="special">(</span><span class="identifier">recvSize</span><span class="special">);</span>
+  <span class="comment">// process contents of buffer</span>
+<span class="special">}</span>
+<span class="keyword">else</span> <span class="special">{</span> <span class="comment">/* handle error */</span> <span class="special">}</span>
+</pre>
+<p>
+        The constructor used here does not initialize the elements: it's done by
+        <code class="computeroutput"><span class="identifier">recv</span></code> later. After writing
+        is done, the superfluous, still uninitialized elements are dropped from the
+        back by <code class="computeroutput"><span class="identifier">unsafe_uninitialized_resize_back</span></code>.
+        This is particularly important for non-trivial value types: The <code class="computeroutput"><span class="identifier">devector</span></code> does not know which elements are
+        initialized, thus, for example, upon destruction, the destructor is called
+        for every supposed elem, even if one is not really there.
+      </p>
+<p>
+        When used with a non trivial type and small buffer optimization, this can
+        be even more efficient (and more flexible) than using <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">array</span></code>,
+        because no unnecessary initialization or assignment is made. Non trivial
+        types can be be put into the right uninitialized slot by <span class="emphasis"><em>placement
+        new</em></span>.
+      </p>
+<p>
+        Most of the time, standard vector can be easily replaced by <code class="computeroutput"><span class="identifier">devector</span></code>. If a custom allocator is needed,
+        however, extra template arguments must be specified:
+      </p>
+<pre class="programlisting"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">double_ended</span><span class="special">;</span> <span class="comment">// assumed here and below</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">regular_vector</span><span class="special">;</span>
+<span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">regular_devector</span><span class="special">;</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">custom_allocator</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;&gt;</span> <span class="identifier">custom_alloc_vector</span><span class="special">;</span>
+
+<span class="identifier">devector</span><span class="special">&lt;</span>
+  <span class="keyword">int</span><span class="special">,</span>
+  <span class="identifier">devector_small_buffer_policy</span><span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;,</span>
+  <span class="identifier">devector_growth_policy</span><span class="special">,</span>
+  <span class="identifier">custom_allocator</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span>
+<span class="special">&gt;</span> <span class="identifier">custom_alloc_devector</span><span class="special">;</span>
+</pre>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="double_ended.examples.batch_deque_usage"></a><a class="link" href="examples.html#double_ended.examples.batch_deque_usage" title="batch_deque usage">batch_deque
+      usage</a>
+</h3></div></div></div>
+<p>
+        The <code class="computeroutput"><span class="identifier">batch_deque</span></code> class template,
+        contrary to the standard deque, allows custom sized segments, configurable
+        via a policy template. This gives greater control over the implementation
+        and ensures portable behavior:
+      </p>
+<pre class="programlisting"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">double_ended</span><span class="special">;</span> <span class="comment">// assumed here and below</span>
+
+<span class="identifier">batch_deque</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">,</span> <span class="identifier">batch_deque_policy</span><span class="special">&lt;</span><span class="number">256</span><span class="special">&gt;&gt;</span> <span class="identifier">deque</span><span class="special">;</span>
+</pre>
+<p>
+        Assuming the user more or less can guess the average required buffer size,
+        the right segment size can be specified to minimize the number of memory
+        allocations.
+      </p>
+<p>
+        Since the segment size is configured by the user, it makes sense to be able
+        to do batch operations over the elements of each segment. In the example
+        below, the deque is used as a flexible output buffer. The <code class="computeroutput"><span class="identifier">write</span></code>
+        function is called for each segment, instead of for eahc element, resulting
+        in better performance. Scatter/gather I/O is possible in a similar way.
+      </p>
+<pre class="programlisting"><span class="keyword">for</span> <span class="special">(</span><span class="keyword">auto</span> <span class="identifier">it</span> <span class="special">=</span> <span class="identifier">deque</span><span class="special">.</span><span class="identifier">segment_begin</span><span class="special">();</span> <span class="identifier">it</span> <span class="special">!=</span> <span class="identifier">deque</span><span class="special">.</span><span class="identifier">segment_end</span><span class="special">();</span> <span class="special">++</span><span class="identifier">it</span><span class="special">)</span>
+<span class="special">{</span>
+  <span class="identifier">write</span><span class="special">(</span><span class="identifier">fd</span><span class="special">,</span> <span class="identifier">it</span><span class="special">.</span><span class="identifier">data</span><span class="special">(),</span> <span class="identifier">it</span><span class="special">.</span><span class="identifier">data_size</span><span class="special">());</span>
+<span class="special">}</span>
+</pre>
+<p>
+        Reference stability is an important feature of the <code class="computeroutput"><span class="identifier">batch_deque</span></code>.
+        Inserting elements to the front or to the back of the sequence never invalidates
+        any references. Moreover, a special insert operation is provided, <code class="computeroutput"><span class="identifier">stable_insert</span></code>, which takes an iterator,
+        as a hint, and inserts a sequence of elements (not necessary directly) before
+        the element pointed by the hint, in a way that it doesn't invalidate references.
+        If needed, default constructs elements to avoid a gap in the sequence.
+      </p>
+<pre class="programlisting"><span class="identifier">batch_deque</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">deque</span><span class="special">{</span><span class="number">1</span><span class="special">,</span> <span class="number">2</span><span class="special">,</span> <span class="number">3</span><span class="special">,</span> <span class="number">4</span><span class="special">,</span> <span class="number">5</span><span class="special">,</span> <span class="number">6</span><span class="special">,</span> <span class="number">7</span><span class="special">,</span> <span class="number">8</span><span class="special">};</span>
+<span class="keyword">auto</span> <span class="identifier">four_it</span> <span class="special">=</span> <span class="identifier">deque</span><span class="special">.</span><span class="identifier">begin</span><span class="special">()</span> <span class="special">+</span> <span class="number">3</span><span class="special">;</span>
+<span class="keyword">int</span><span class="special">&amp;</span> <span class="identifier">four</span> <span class="special">=</span> <span class="special">*</span><span class="identifier">four_it</span><span class="special">;</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">input</span><span class="special">(</span><span class="number">100</span><span class="special">,</span> <span class="number">9</span><span class="special">);</span>
+<span class="identifier">deque</span><span class="special">.</span><span class="identifier">stable_insert</span><span class="special">(</span><span class="identifier">four_it</span><span class="special">,</span> <span class="identifier">input</span><span class="special">.</span><span class="identifier">begin</span><span class="special">(),</span> <span class="identifier">input</span><span class="special">.</span><span class="identifier">end</span><span class="special">());</span>
+
+<span class="identifier">BOOST_ASSERT</span><span class="special">(</span><span class="identifier">four</span> <span class="special">==</span> <span class="number">4</span><span class="special">);</span> <span class="comment">// stable_insert ensures reference stability</span>
+</pre>
+<p>
+        This feature can be useful, if reference stability and relative order is
+        required, but the exact number of the elements is flexible, e.g: when the
+        sequence stores cached objects.
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2015 Benedek Thaler<p>
+        Boost Software License, Version 1.0.
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="design_rationale.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reference.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

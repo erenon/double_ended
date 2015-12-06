@@ -1,0 +1,109 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Design Rationale</title>
+<link rel="stylesheet" href="http://www.boost.org/doc/libs/1_55_0/doc/src/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
+<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
+<link rel="prev" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
+<link rel="next" href="examples.html" title="Examples">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="spirit-nav">
+<a accesskey="p" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="examples.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="double_ended.design_rationale"></a><a class="link" href="design_rationale.html" title="Design Rationale">Design Rationale</a>
+</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="design_rationale.html#double_ended.design_rationale.devector"><span class="emphasis"><em>devector</em></span></a></span></dt>
+<dt><span class="section"><a href="design_rationale.html#double_ended.design_rationale.batch_deque"><span class="emphasis"><em>batch_deque</em></span></a></span></dt>
+</dl></div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="double_ended.design_rationale.devector"></a><a class="link" href="design_rationale.html#double_ended.design_rationale.devector" title="devector"><span class="emphasis"><em>devector</em></span></a>
+</h3></div></div></div>
+<p>
+        <code class="computeroutput"><span class="identifier">devector</span></code> is a hybrid of the
+        standard vector and deque containers, as well as the <code class="computeroutput"><span class="identifier">small_vector</span></code>
+        of Boost.Container. It offers cheap (amortized constant time) insertion at
+        both the front and back ends, while also providing the regular features of
+        <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span></code>, in particular the contiguous underlying
+        memory. In contrast to the standard vector, however, <code class="computeroutput"><span class="identifier">devector</span></code>
+        offers greater control over its internals. Like <code class="computeroutput"><span class="identifier">small_vector</span></code>,
+        it can store elements internally without dynamically allocating memory.
+      </p>
+<p>
+        Through a policy template argument, it's possible to add small buffer optimization
+        to <code class="computeroutput"><span class="identifier">devector</span></code>: The specified
+        number of elements will be stored inline with the internals, without requiring
+        additional heap allocation. If the size of the <code class="computeroutput"><span class="identifier">devector</span></code>
+        exceeds the small buffer size, it automatically switches to an allocated
+        storage.
+      </p>
+<p>
+        Furthermore, through another policy template argument, it's also possible
+        to change how the <code class="computeroutput"><span class="identifier">devector</span></code>
+        grows its storage, providing explicit control over the reallocation strategy
+        and consistent behavior across different platforms.
+      </p>
+<p>
+        To accommodate high performance requirements, <code class="computeroutput"><span class="identifier">devector</span></code>
+        offers (potentially) unsafe, less encapsulating methods: such methods can
+        avoid unnecessary checks or initialization, but can trigger undefined behavior
+        if their contract is broken.
+      </p>
+<p>
+        The <code class="computeroutput"><span class="identifier">devector</span></code> class template
+        intends to be a drop in replacement of <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span></code>.
+        However, to keep its size slim (16 bytes on 32 bit, 24 bytes on a typical
+        64 bit architecture), its <code class="computeroutput"><span class="identifier">size_type</span></code>
+        is defined as <code class="computeroutput"><span class="keyword">unsigned</span> <span class="keyword">int</span></code>
+        which reduces <code class="computeroutput"><span class="identifier">max_size</span><span class="special">()</span></code>
+        to <code class="computeroutput"><span class="identifier">UINT_MAX</span></code>.
+      </p>
+<p>
+        In general, <code class="computeroutput"><span class="identifier">devector</span></code> uses
+        <code class="computeroutput"><span class="identifier">move_if_noexcept</span></code> whenever
+        necessary, offering strong exception guarantees. <code class="computeroutput"><span class="identifier">devector</span></code>
+        implements the NAD (Not A Defect) resolution of <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#526" target="_top">LWG
+        Issue 526 (<span class="emphasis"><em>Is it undefined if a function in the standard changes
+        in parameters?</em></span>)</a>.
+      </p>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="double_ended.design_rationale.batch_deque"></a><a class="link" href="design_rationale.html#double_ended.design_rationale.batch_deque" title="batch_deque"><span class="emphasis"><em>batch_deque</em></span></a>
+</h3></div></div></div>
+<p>
+        <code class="computeroutput"><span class="identifier">batch_deque</span></code> is very similar
+        to the standard <code class="computeroutput"><span class="identifier">deque</span></code>, with
+        a slight twist. It lets you specify its <span class="emphasis"><em>segment size</em></span>:
+        The size of the contiguous memory segments it uses to store its elements.
+        This provides a consistent layout across platforms, and lets you iterate
+        over the segments with batch operations.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">batch_deque</span></code> makes a good
+        candidate for a container of cached or reusable elements, because it provides
+        reference stability while inserting at either end with amortized constant
+        complexity. Reference stability also makes it possible to store the elements
+        of an intrusive container.
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2015 Benedek Thaler<p>
+        Boost Software License, Version 1.0.
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="examples.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>
