@@ -6,12 +6,12 @@
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="../../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
 <link rel="up" href="../../double_ended/reference.html#header.boost.double_ended.devector_hpp" title="Header &lt;boost/double_ended/devector.hpp&gt;">
-<link rel="prev" href="devector_small_idp24179600.html" title="Struct template devector_small_buffer_policy">
+<link rel="prev" href="devector_small_idp43962016.html" title="Struct template devector_small_buffer_policy">
 <link rel="next" href="reserve_only_tag.html" title="Struct reserve_only_tag">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="spirit-nav">
-<a accesskey="p" href="devector_small_idp24179600.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../double_ended/reference.html#header.boost.double_ended.devector_hpp"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reserve_only_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+<a accesskey="p" href="devector_small_idp43962016.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../double_ended/reference.html#header.boost.double_ended.devector_hpp"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reserve_only_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
 </div>
 <div class="refentry">
 <a name="boost.double_ended.devector_growth_policy"></a><div class="titlepage"></div>
@@ -25,21 +25,21 @@
 </span>
 <span class="keyword">struct</span> <a class="link" href="devector_growth_policy.html" title="Struct devector_growth_policy">devector_growth_policy</a> <span class="special">{</span>
 
-  <span class="comment">// <a class="link" href="devector_growth_policy.html#idp24185424-bb">public static functions</a></span>
-  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> SizeType<span class="special">&gt;</span> <span class="keyword">static</span> <span class="identifier">SizeType</span> <a class="link" href="devector_growth_policy.html#idp24185824-bb"><span class="identifier">new_capacity</span></a><span class="special">(</span><span class="identifier">SizeType</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="devector_growth_policy.html#idp43969744-bb">public static functions</a></span>
+  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> SizeType<span class="special">&gt;</span> <span class="keyword">static</span> <span class="identifier">SizeType</span> <a class="link" href="devector_growth_policy.html#idp43970144-bb"><span class="identifier">new_capacity</span></a><span class="special">(</span><span class="identifier">SizeType</span><span class="special">)</span><span class="special">;</span>
   <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> SizeType<span class="special">&gt;</span> 
-    <span class="keyword">static</span> <span class="keyword">bool</span> <a class="link" href="devector_growth_policy.html#idp24190512-bb"><span class="identifier">should_shrink</span></a><span class="special">(</span><span class="identifier">SizeType</span><span class="special">,</span> <span class="identifier">SizeType</span><span class="special">,</span> <span class="identifier">SizeType</span><span class="special">)</span><span class="special">;</span>
+    <span class="keyword">static</span> <span class="keyword">bool</span> <a class="link" href="devector_growth_policy.html#idp43974832-bb"><span class="identifier">should_shrink</span></a><span class="special">(</span><span class="identifier">SizeType</span><span class="special">,</span> <span class="identifier">SizeType</span><span class="special">,</span> <span class="identifier">SizeType</span><span class="special">)</span><span class="special">;</span>
 <span class="special">}</span><span class="special">;</span></pre></div>
 <div class="refsect1">
-<a name="idp75603696"></a><h2>Description</h2>
+<a name="idp93324176"></a><h2>Description</h2>
 <p>Controls a devectors reallocation policy.</p>
 <p>Models the <code class="computeroutput">GrowthPolicy</code> concept of the devector class. </p>
 <div class="refsect2">
-<a name="idp75605456"></a><h3>
-<a name="idp24185424-bb"></a><code class="computeroutput">devector_growth_policy</code> public static functions</h3>
+<a name="idp93325872"></a><h3>
+<a name="idp43969744-bb"></a><code class="computeroutput">devector_growth_policy</code> public static functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> SizeType<span class="special">&gt;</span> <span class="keyword">static</span> <span class="identifier">SizeType</span> <a name="idp24185824-bb"></a><span class="identifier">new_capacity</span><span class="special">(</span><span class="identifier">SizeType</span> capacity<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> SizeType<span class="special">&gt;</span> <span class="keyword">static</span> <span class="identifier">SizeType</span> <a name="idp43970144-bb"></a><span class="identifier">new_capacity</span><span class="special">(</span><span class="identifier">SizeType</span> capacity<span class="special">)</span><span class="special">;</span></pre>
 <p><span class="bold"><strong>Returns</strong></span>: 4 times the old capacity or 16 if it's 0.</p>
 <p>
 </p>
@@ -65,7 +65,7 @@
 </li>
 <li class="listitem">
 <pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> SizeType<span class="special">&gt;</span> 
-  <span class="keyword">static</span> <span class="keyword">bool</span> <a name="idp24190512-bb"></a><span class="identifier">should_shrink</span><span class="special">(</span><span class="identifier">SizeType</span> size<span class="special">,</span> <span class="identifier">SizeType</span> capacity<span class="special">,</span> 
+  <span class="keyword">static</span> <span class="keyword">bool</span> <a name="idp43974832-bb"></a><span class="identifier">should_shrink</span><span class="special">(</span><span class="identifier">SizeType</span> size<span class="special">,</span> <span class="identifier">SizeType</span> capacity<span class="special">,</span> 
                             <span class="identifier">SizeType</span> small_buffer_size<span class="special">)</span><span class="special">;</span></pre>
 <p><span class="bold"><strong>Returns</strong></span>: true, if the contents fit in the small buffer.</p>
 <p>
@@ -113,7 +113,7 @@
 </tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="devector_small_idp24179600.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../double_ended/reference.html#header.boost.double_ended.devector_hpp"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reserve_only_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+<a accesskey="p" href="devector_small_idp43962016.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../double_ended/reference.html#header.boost.double_ended.devector_hpp"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reserve_only_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
 </div>
 </body>
 </html>
