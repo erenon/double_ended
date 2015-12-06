@@ -1,0 +1,37 @@
+# Copyright 2015 Benedek Thaler
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+using doxygen ;
+
+import quickbook ;
+
+project boost/double_ended_doc
+  : build-dir /var/tmp/double-ended/build/doc
+  ;
+
+doxygen apidoc
+  : [ glob ../include/boost/double_ended/*.hpp ]
+  :
+  <doxygen:param>"PREDEFINED= \\
+    \"BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED\" \\
+  "
+  <doxygen:param>INLINE_INHERITED_MEMB=YES
+  <doxygen:param>MACRO_EXPANSION=YES
+  <doxygen:param>INCLUDE_PATH=$(BOOST_ROOT)
+  <doxygen:param>EXAMPLE_PATH=../example
+  <doxygen:param>SUBGROUPING=NO
+  ;
+
+xml double_ended : index.qbk ;
+
+boostbook standalone
+  : double_ended
+  :
+  <dependency>apidoc
+  <xsl:param>boost.root=$(BOOST_ROOT)
+  <xsl:param>html.stylesheet=http://www.boost.org/doc/libs/1_55_0/doc/src/boostbook.css
+  <xsl:param>boost.graphics.root=http://www.boost.org/doc/libs/common/doc/src/images/
+  <xsl:param>boost.header.root=../../include
+  <format>html
+;

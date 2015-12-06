@@ -1,0 +1,45 @@
+# Copyright 2015 Benedek Thaler
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+using testing ;
+
+project boost/double_ended
+  : build-dir /var/tmp/double-ended/build/test
+  : requirements
+    <include>../include
+    <include>$(BOOST_ROOT)
+  ;
+
+local toolset =
+    <toolset>gcc:<cxxflags>-Wextra
+    <toolset>gcc:<cxxflags>-Werror
+    <toolset>gcc:<cxxflags>-std=c++11
+    <toolset>gcc:<cxxflags>-fsanitize=address
+    <toolset>gcc:<linkflags>-Wl,-lasan
+    <toolset>clang:<cxxflags>-Wextra
+    <toolset>clang:<cxxflags>-Werror
+    <toolset>clang:<cxxflags>-std=c++11
+;
+
+rule test_all
+{
+   local rules = ;
+
+   local sources = [ glob *.cpp ] ;
+   sources      += [ glob ../example/*.cpp ] ;
+
+   for local source in $(sources)
+   {
+      rules += [ run $(source)
+      :  # args passed to tests
+      :  # input files
+      :  # other properties
+         $(toolset)
+      ] ;
+   }
+
+   return $(rules) ;
+}
+
+test-suite double_ended_test : [ test_all ] ;

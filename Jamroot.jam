@@ -1,0 +1,63 @@
+# Copyright 2015 Benedek Thaler
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# Search for a boost installation to use
+
+# Use BOOST_ROOT if present
+# To set this variable, invoke bjam like this:
+#
+#    $ BOOST_ROOT=/path/to/custom/install bjam
+#
+# A more permanent solution is to add the following
+# to your ~/user-config.jam along with your compilers:
+#
+#    path-constant BOOST_ROOT : /path/to/custom/install ;
+#
+#    using gcc ;
+#    using clang ;
+#
+
+local boost_root = $(BOOST_ROOT) ;
+
+if ! $(boost_root)
+{
+  boost_root = [ modules.peek : BOOST_ROOT ] ;
+}
+
+if ! $(boost_root)
+{
+  # BOOST_ROOT not set, let's see if the project
+  # is in the boost tree (under libs/project/)
+
+  if [ glob ../../boost/version.hpp ]
+  {
+    boost_root = ../../ ;
+  }
+}
+
+if ! $(boost_root)
+{
+  # Still no luck. Let's see if bjam gives us a path
+
+  local dirs = [ modules.peek : BOOST_BUILD_PATH ] ;
+
+  for local dir in $(dirs)
+  {
+    if [ glob $(dir)/boost/version.hpp ]
+    {
+      boost_root = $(dir) ;
+    }
+  }
+}
+
+if $(boost_root)
+{
+  ECHO "Using boost install:" $(boost_root) ;
+  path-constant BOOST_ROOT : $(boost_root) ;
+}
+else
+{
+  ECHO "No custom boost install specified, will try to use system install" ;
+}
+

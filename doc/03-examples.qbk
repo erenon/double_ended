@@ -1,0 +1,108 @@
+[/
+ / Copyright 2015 Benedek Thaler
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Examples]
+
+[section:devector_usage devector usage]
+
+[import ../example/doc_devector.cpp]
+
+The `devector` class template, along the standard vector features, also offers a few extra.
+The small buffer optimization allows some elements to be stored next to the `devector` internals,
+without allocating extra memory. If the size of the `devector` exceeds the size of the small buffer,
+elements previously held in the small buffer are copied to dynamically allocated buffer, the small buffer
+remains unused: The memory is always contiguous. The size of the small buffer must be set by the `SmallBufferPolicy`
+template argument. If it's set to 0, no small buffer is used.
+
+[doc_devector_sbo]
+
+The small buffer optimization makes the `devector` a good candidate of a buffer.
+It is safer and more flexible than a C style array or `std::array`, because it manages its size and memory,
+and it's just as performant: while using the small buffer, no dynamic memory allocation happens.
+
+In the above example, if `push_front` was used instead of `push_back`, allocation would happen: Push
+operations do not shift elements to avoid breaking the promise of `reserve`. If you want shifting,
+use `insert` instead.
+
+In contrast with the standard vector, `devector` allows reserving construction time. This is especially
+important when both front and back pushes are anticipated. In the following example, only a single
+allocation is required, no reallocation happens:
+
+[doc_devector_ctr_reserve]
+
+The pace how standard vector grows its buffer is not fixed by the standard, it's an implementation detail.
+If you want a platform independent, custom behavior for `devector`, specify a `GrowthPolicy`:
+
+[doc_devector_growth_policy]
+
+Here, the initial capacity of a non-empty devector will be at least 16 (`initial_size`).
+For example: on the first `push_back`, memory for 16 elements will be allocated.
+According to the specified growth policy, the internal storage
+is doubled every time the `devector` runs out of memory (`growth_factor`).
+
+When `shrink_to_fit` is called, first the `should_shrink` method of the growth policy is consulted with.
+Only if it returns true, can a shrink happen. Here, the policy allows shrinking only
+if the contents of the `devector` can fit in the small buffer.
+
+Among the several usecases, a simple one is reversing an input range in one go
+while doing as few allocations as possible. In the following example, input lines are pushed
+to the front of the buffer, thus automatically forming a reverse order.
+
+[doc_devector_reverse_input]
+
+The `devector` is more trusting than the standard containers:
+it allows the programmer to use (potentially) unsafe methods.
+The most simple are the `unsafe_push_front` and `unsafe_push_back` methods.
+They are similar to the safe versions, but here, the caller must make sure the required free capacity
+is present before calling them. The benefit: avoiding a check, thus sparing a few instructions.
+
+[doc_devector_unsafe_push]
+
+Another unsafe, but efficient construct is placing uninitialized elements into the sequence.
+In the example below, data is read from a socket and copied directly to the `devector` buffer:
+
+[doc_devector_unsafe_uninit]
+
+The constructor used here does not initialize the elements: it's done by `recv` later.
+After writing is done, the superfluous, still uninitialized elements are dropped from the back
+by `unsafe_uninitialized_resize_back`. This is particularly important for non-trivial value types:
+The `devector` does not know which elements are initialized, thus, for example, upon destruction,
+the destructor is called for every supposed elem, even if one is not really there.
+
+When used with a non trivial type and small buffer optimization, this can be even more efficient
+(and more flexible) than using `std::array`, because no unnecessary initialization or assignment is made.
+Non trivial types can be be put into the right uninitialized slot by /placement new/.
+
+Most of the time, standard vector can be easily replaced by `devector`. If a custom allocator
+is needed, however, extra template arguments must be specified:
+
+[doc_devector_replace_vector]
+
+[endsect]
+
+[section:batch_deque_usage batch_deque usage]
+
+[import ../example/doc_batch_deque.cpp]
+
+The `batch_deque` class template, contrary to the standard deque, allows custom sized segments, configurable via a policy template. This gives greater control over the implementation and ensures portable behavior:
+
+[doc_batch_deque_sizing]
+
+Assuming the user more or less can guess the average required buffer size, the right segment size can be specified to minimize the number of memory allocations.
+
+Since the segment size is configured by the user, it makes sense to be able to do batch operations over the elements of each segment. In the example below, the deque is used as a flexible output buffer. The `write` function is called for each segment, instead of for eahc element, resulting in better performance. Scatter/gather I/O is possible in a similar way.
+
+[doc_batch_deque_segment_iterator]
+
+Reference stability is an important feature of the `batch_deque`. Inserting elements to the front or to the back of the sequence never invalidates any references. Moreover, a special insert operation is provided, `stable_insert`, which takes an iterator, as a hint, and inserts a sequence of elements (not necessary directly) before the element pointed by the hint, in a way that it doesn't invalidate references. If needed, default constructs elements to avoid a gap in the sequence.
+
+[doc_batch_deque_stable_insert]
+
+This feature can be useful, if reference stability and relative order is required, but the exact number of the elements is flexible, e.g: when the sequence stores cached objects.
+
+[endsect]
+
+[endsect]

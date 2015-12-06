@@ -1,0 +1,53 @@
+[/
+ / Copyright 2015 Benedek Thaler
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Design Rationale]
+
+[section:devector ['devector]]
+
+`devector` is a hybrid of the standard vector and deque containers, as well as the `small_vector` of Boost.Container.
+It offers cheap (amortized constant time) insertion at both the front and back ends,
+while also providing the regular features of `std::vector`, in particular the contiguous underlying memory.
+In contrast to the standard vector, however, `devector` offers greater control over its internals.
+Like `small_vector`, it can store elements internally without dynamically allocating memory.
+
+Through a policy template argument, it's possible to add small buffer optimization to `devector`:
+The specified number of elements will be stored inline with the internals, without requiring
+additional heap allocation. If the size of the `devector` exceeds the small buffer size, it
+automatically switches to an allocated storage.
+
+Furthermore, through another policy template argument, it's also possible to change how the `devector` grows
+its storage, providing explicit control over the reallocation strategy and consistent behavior across
+different platforms.
+
+To accommodate high performance requirements, `devector` offers (potentially) unsafe,
+less encapsulating methods: such methods can avoid unnecessary checks or initialization,
+but can trigger undefined behavior if their contract is broken.
+
+The `devector` class template intends to be a drop in replacement of `std::vector`. However, to keep its size slim
+(16 bytes on 32 bit, 24 bytes on a typical 64 bit architecture), its `size_type` is defined as
+`unsigned int` which reduces `max_size()` to `UINT_MAX`.
+
+In general, `devector` uses `move_if_noexcept` whenever necessary, offering strong exception guarantees.
+`devector` implements the NAD (Not A Defect) resolution of
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#526 LWG Issue 526
+(['Is it undefined if a function in the standard changes in parameters?])].
+
+[endsect]
+
+[section:batch_deque ['batch_deque]]
+
+`batch_deque` is very similar to the standard `deque`, with a slight twist. It lets you specify its /segment size/:
+The size of the contiguous memory segments it uses to store its elements. This provides a consistent layout across platforms,
+and lets you iterate over the segments with batch operations.
+
+`batch_deque` makes a good candidate for a container of cached or reusable elements, because it provides reference
+stability while inserting at either end with amortized constant complexity. Reference stability also makes it
+possible to store the elements of an intrusive container.
+
+[endsect]
+
+[endsect]
