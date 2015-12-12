@@ -4,15 +4,23 @@
 
 language: cpp
 os: linux
-compiler:
-  - gcc
-  - clang
-
 sudo: false
 
 branches:
   only:
     - master
+
+matrix:
+  include:
+
+    # GCC 4.8
+    - env: CXX=g++-4.8 CXX_PATH=/usr/bin/g++-4.8 CXX_NAME=gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.8
 
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
@@ -32,6 +40,7 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 script:
+  - echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > project-config.jam
   - cd test
-  - b2 --toolset=${CC} -j2
+  - b2 --toolset=${CXX_NAME} -j2
 
