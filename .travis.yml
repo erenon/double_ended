@@ -1,0 +1,38 @@
+# Copyright Benedek Thaler 2015-2015
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+language: cpp
+os: linux
+compiler:
+  - gcc
+  - clang
+
+branches:
+  only:
+    - master
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libboost-dev
+
+install:
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+
+  # Install Boost
+  - BOOST_URL="http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.gz"
+  - mkdir boost && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C boost
+  - export BOOST_ROOT=${DEPS_DIR}/boost
+  - export BOOST_BUILD_PATH=${DEPS_DIR}/boost
+
+  # Set Boost.Build
+  - export PATH=${DEPS_DIR}/boost/tools/build:${PATH}
+
+  - cd ${TRAVIS_BUILD_DIR}
+
+script:
+  - cd test
+  - b2 --toolset=gcc -j2
+  - b2 --toolset=clang -j2
+
