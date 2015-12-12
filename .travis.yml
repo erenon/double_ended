@@ -40,7 +40,8 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 script:
-  - echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > project-config.jam
-  - cd test
-  - b2 --toolset=${CXX_NAME} -j2
+  - |
+    echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > project-config.jam
+    cd test
+    b2 --toolset=${CXX_NAME} -j2
 
