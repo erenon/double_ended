@@ -25,7 +25,8 @@ install:
   - export BOOST_BUILD_PATH=${BOOST_ROOT}
 
   # Setup Boost.Build
-  - ${BOOST_ROOT}/tools/build/bootstrap.sh # build b2
+  - cd ${BOOST_ROOT}/tools/build/
+  - ./bootstrap.sh # build b2
   - export PATH=${BOOST_ROOT}/tools/build:${PATH}
 
   - cd ${TRAVIS_BUILD_DIR}
