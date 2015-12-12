@@ -33,5 +33,5 @@ install:
 
 script:
   - cd test
-  - b2 --toolset=$(CC) -j2
+  - b2 --toolset=${CC} -j2
 
