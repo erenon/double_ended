@@ -24,15 +24,15 @@ install:
   - BOOST_URL="http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.gz"
   - mkdir boost && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C boost
   - export BOOST_ROOT=${DEPS_DIR}/boost
-  - export BOOST_BUILD_PATH=${DEPS_DIR}/boost
+  - export BOOST_BUILD_PATH=${BOOST_ROOT}
 
-  # Set Boost.Build
-  - export PATH=${DEPS_DIR}/boost/tools/build:${PATH}
+  # Setup Boost.Build
+  - ${BOOST_ROOT}/tools/build/booststrap.sh # build b2
+  - export PATH=${BOOST_ROOT}/tools/build:${PATH}
 
   - cd ${TRAVIS_BUILD_DIR}
 
 script:
   - cd test
-  - b2 --toolset=gcc -j2
-  - b2 --toolset=clang -j2
+  - b2 --toolset=$(CC) -j2
 
