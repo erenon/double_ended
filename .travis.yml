@@ -10,6 +10,11 @@ branches:
   only:
     - master
 
+env:
+  # Workaround for: https://github.com/travis-ci/travis-ci/issues/4681
+  matrix:
+    - TRAVIS_EXTRA_JOB_WORKAROUND=true
+
 matrix:
   include:
 
@@ -21,6 +26,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-4.8
+
+  exclude:
+    - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
 
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
