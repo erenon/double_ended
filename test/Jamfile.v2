@@ -8,18 +8,19 @@ project boost/double_ended
   : build-dir /var/tmp/double-ended/build/test
   : requirements
     <include>../include
-    <include>$(BOOST_ROOT)
   ;
 
 local toolset =
     <toolset>gcc:<cxxflags>-Wextra
     <toolset>gcc:<cxxflags>-Werror
     <toolset>gcc:<cxxflags>-std=c++11
+    <toolset>gcc:<cxxflags>-isystem=$(BOOST_ROOT)
     <toolset>gcc:<cxxflags>-fsanitize=address
     <toolset>gcc:<linkflags>-Wl,-lasan
     <toolset>clang:<cxxflags>-Wextra
     <toolset>clang:<cxxflags>-Werror
     <toolset>clang:<cxxflags>-std=c++11
+    <toolset>clang:<cxxflags>-isystem=$(BOOST_ROOT)
 ;
 
 rule test_all
