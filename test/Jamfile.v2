@@ -21,6 +21,7 @@ local toolset =
     <toolset>clang:<cxxflags>-Wextra
     <toolset>clang:<cxxflags>-Werror
     <toolset>clang:<cxxflags>-std=c++11
+    <toolset>clang:<cxxflags>-I$(BOOST_ROOT)
     <toolset>clang:<cxxflags>--system-header-prefix=boost/
     <toolset>clang:<cxxflags>--no-system-header-prefix=boost/double_ended
 ;
