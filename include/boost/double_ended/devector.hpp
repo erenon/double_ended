@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstring> // memcpy
+#include <stdexcept>
 #include <type_traits>
 
 #include <boost/assert.hpp>
@@ -622,6 +623,7 @@ public:
     if ((copy_alloc || equal_alloc) && x.is_small() == false)
     {
       clear();
+      deallocate_buffer();
 
       if (copy_alloc)
       {
