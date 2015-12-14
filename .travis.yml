@@ -27,6 +27,15 @@ matrix:
           packages:
             - g++-4.8
 
+    # GCC 5.3
+    - env: CXX=g++-5 CXX_PATH=/usr/bin/g++-5 CXX_NAME=gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+
     # Clang 3.5
     - env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang
       addons:
@@ -36,6 +45,16 @@ matrix:
             - llvm-toolchain-precise-3.5
           packages:
             - clang-3.5
+
+    # Clang 3.7
+    - env: CXX=clang++-3.7 CXX_PATH=/usr/bin/clang++-3.7 CXX_NAME=clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test # depends on libstdc++
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
 
   exclude:
     - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
