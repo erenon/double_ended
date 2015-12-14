@@ -2272,6 +2272,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
+    BOOST_TEST(c.size() >= 16);
   }
 
   // range to end
@@ -2287,6 +2288,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
+    BOOST_TEST(d.size() >= 16);
   }
 
   // range to mid mid-segment
@@ -2302,6 +2304,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
+    BOOST_TEST(e.size() >= 18);
   }
 
   // range to mid segment boundary
@@ -2317,6 +2320,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
+    BOOST_TEST(f.size() >= 17);
   }
 
   // range to mid segment, no default ctr
@@ -2332,6 +2336,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
+    BOOST_TEST(g.size() >= 22);
   }
 }
 

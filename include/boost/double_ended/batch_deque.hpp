@@ -12,6 +12,7 @@
 #define BOOST_DOUBLE_ENDED_FLEX_DEQUE_HPP
 
 #include <iterator> // next, prev
+#include <stdexcept>
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/core/no_exceptions_support.hpp>
@@ -1747,23 +1748,30 @@ public:
   template <class InputIterator>
   iterator stable_insert(const_iterator position_hint, InputIterator first, InputIterator last)
   {
-    if (position_hint == _end || position_hint == _begin)
+    if (position_hint == _end)
     {
       return insert(position_hint, first, last);
+    }
+    else if (position_hint._p_segment == _begin._p_segment)
+    {
+      return insert(begin(), first, last);
     }
     else
     {
       batch_deque tmp(first, last);
       tmp.resize(tmp.size() + tmp.back_free_capacity());
 
-      pointer begin_segment = *_begin._p_segment;
-      pointer end_segment   = *_end._p_segment;
+      const size_type seg_count = _end._p_segment - _begin._p_segment;
+      const size_type tmp_seg_count = tmp._end._p_segment - tmp._begin._p_segment;
+
+      const size_type new_begin_seg_index = _begin._p_segment - _map.begin();
+      const size_type new_end_seg_index = new_begin_seg_index + seg_count + tmp_seg_count;
 
       const const_map_iterator hint_segment = unconst_iterator(position_hint)._p_segment;
       map_iterator result_segment = _map.insert(hint_segment, tmp._map.begin(), tmp._map.end());
 
-      _begin._p_segment = &*std::find(_map.begin(), _map.end(), begin_segment);
-      _end._p_segment   = &*std::find(_map.begin(), _map.end(),   end_segment);
+      _begin._p_segment = _map.begin() + new_begin_seg_index;
+      _end._p_segment = _map.begin() + new_end_seg_index;
 
       tmp._map.clear();
       tmp._end = tmp._begin = {tmp._map.begin(), 0};
@@ -1953,6 +1961,16 @@ private:
     }
   }
 
+  void deallocate_segments(const const_map_iterator first, const const_map_iterator last)
+  {
+    for (const_map_iterator it = first; it != last; ++it)
+    {
+      deallocate_segment(*it);
+    }
+
+    _map.erase(first, last);
+  }
+
   pointer allocate_segment()
   {
     return allocator_traits::allocate(get_allocator_ref(), segment_size);
@@ -2129,7 +2147,7 @@ private:
       _begin._index = 0;
       _end = _begin + std::distance(first_origi, first);
 
-      _map.erase(dst_cur, dst_end);
+      deallocate_segments(dst_cur, dst_end);
     }
     else
     {
@@ -2186,7 +2204,7 @@ private:
     destroy_elements(begin(), new_begin);
 
     const_map_iterator new_map_begin = new_begin._p_segment;
-    _map.erase(_map.begin(), new_map_begin);
+    deallocate_segments(_map.begin(), new_map_begin);
     _begin = new_begin;
   }
 
@@ -2202,7 +2220,7 @@ private:
       ++new_map_end;
     }
 
-    _map.erase(new_map_end, _map.end());
+    deallocate_segments(new_map_end, _map.end());
     _end = new_end;
   }
 
