@@ -1106,6 +1106,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(max_size, Deque, all_deques)
   (void)a.max_size();
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(capacity, Deque, all_deques)
+{
+  {
+    Deque a;
+    BOOST_TEST(a.capacity() == 0);
+  }
+
+  {
+    Deque b = get_range<Deque>(20);
+    BOOST_TEST(b.capacity() >= 20);
+  }
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(resize_value, Deque, t_is_default_constructible)
 {
   {

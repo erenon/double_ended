@@ -1051,6 +1051,17 @@ public:
   }
 
   /**
+   * **Returns**: The total number of elements that the batch_deque can hold without
+   * allocating a new segment.
+   *
+   * **Complexity**: Constant.
+   */
+  size_type capacity() const noexcept
+  {
+    return _map.size() * segment_size;
+  }
+
+  /**
    * **Returns**: The total number of elements that can be pushed to the front of the
    * sequence without requiring a new segment to be allocated.
    *
