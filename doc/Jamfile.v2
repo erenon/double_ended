@@ -7,7 +7,7 @@ using doxygen ;
 import quickbook ;
 
 project boost/double_ended_doc
-  : build-dir /var/tmp/double-ended/build/doc
+  : build-dir /var/tmp/double_ended/build/doc
   ;
 
 doxygen apidoc

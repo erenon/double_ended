@@ -5,7 +5,7 @@
 using testing ;
 
 project boost/double_ended
-  : build-dir /var/tmp/double-ended/build/test
+  : build-dir /var/tmp/double_ended/build/test
   : requirements
     <include>../include
   ;
