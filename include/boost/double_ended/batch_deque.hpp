@@ -1085,6 +1085,108 @@ public:
          + (segment_size - _end._index) % segment_size;
   }
 
+  /** **Equivalent to**: `resize_back(sz)` */
+  void resize(size_type sz) { resize_back(sz); }
+
+  /** **Equivalent to**: `resize_back(sz, c)` */
+  void resize(size_type sz, const T& c) { resize_back(sz, c); }
+
+  /**
+   * [DefaultConstructible]: http://en.cppreference.com/w/cpp/concept/DefaultConstructible
+   *
+   * **Effects**: If `sz` is greater than the size of `*this`,
+   * additional value-initialized elements are inserted
+   * to the front. Invalidates iterators if segment allocation is needed.
+   * If `sz` is smaller than than the size of `*this`,
+   * elements are popped from the front.
+   *
+   * **Requires**: T shall be [DefaultConstructible].
+   *
+   * **Postcondition**: `sz == size()`.
+   *
+   * **Exceptions**: Strong exception guarantee.
+   *
+   * **Complexity**: Linear in the size of `*this` and `sz`.
+   */
+  void resize_front(size_type sz)
+  {
+    if (sz >= size())
+    {
+      const size_type old_size = size();
+      BOOST_TRY
+      {
+        for (size_type to_add = sz - size(); to_add; --to_add)
+        {
+          emplace_front();
+        }
+      }
+      BOOST_CATCH(...)
+      {
+        for (size_type to_remove = size() - old_size; to_remove; --to_remove)
+        {
+          pop_front();
+        }
+        BOOST_RETHROW;
+      }
+      BOOST_CATCH_END
+    }
+    else
+    {
+      iterator new_begin = begin() + (size() - sz);
+      erase_at_begin(new_begin);
+    }
+
+    BOOST_ASSERT(invariants_ok());
+  }
+
+  /**
+   * [CopyInsertable]: http://en.cppreference.com/w/cpp/concept/CopyInsertable
+   *
+   * **Effects**: If `sz` is greater than the size of `*this`,
+   * copies of `c` are inserted to the front. Invalidates iterators if
+   * segment allocation is needed.
+   * If `sz` is smaller than than the size of `*this`,
+   * elements are popped from the front.
+   *
+   * **Postcondition**: `sz == size()`.
+   *
+   * **Requires**: `T` shall be [CopyInsertable] into `*this`.
+   *
+   * **Exceptions**: Strong exception guarantee.
+   *
+   * **Complexity**: Linear in the size of `*this` and `sz`.
+   */
+  void resize_front(size_type sz, const T& c)
+  {
+    if (sz >= size())
+    {
+      const size_type old_size = size();
+      BOOST_TRY
+      {
+        for (size_type to_add = sz - size(); to_add; --to_add)
+        {
+          push_front(c);
+        }
+      }
+      BOOST_CATCH(...)
+      {
+        for (size_type to_remove = size() - old_size; to_remove; --to_remove)
+        {
+          pop_front();
+        }
+        BOOST_RETHROW;
+      }
+      BOOST_CATCH_END
+    }
+    else
+    {
+      iterator new_begin = begin() + (size() - sz);
+      erase_at_begin(new_begin);
+    }
+
+    BOOST_ASSERT(invariants_ok());
+  }
+
   /**
    * [DefaultConstructible]: http://en.cppreference.com/w/cpp/concept/DefaultConstructible
    *
@@ -1102,20 +1204,35 @@ public:
    *
    * **Complexity**: Linear in the size of `*this` and `sz`.
    */
-  void resize(size_type sz)
+  void resize_back(size_type sz)
   {
     if (sz >= size())
     {
-      for (size_type diff = sz - size(); diff; --diff)
+      const size_type old_size = size();
+      BOOST_TRY
       {
-        emplace_back();
+        for (size_type to_add = sz - size(); to_add; --to_add)
+        {
+          emplace_back();
+        }
       }
+      BOOST_CATCH(...)
+      {
+        for (size_type to_remove = size() - old_size; to_remove; --to_remove)
+        {
+          pop_back();
+        }
+        BOOST_RETHROW;
+      }
+      BOOST_CATCH_END
     }
     else
     {
       iterator new_end = begin() + sz;
       erase_at_end(new_end);
     }
+
+    BOOST_ASSERT(invariants_ok());
   }
 
   /**
@@ -1135,14 +1252,27 @@ public:
    *
    * **Complexity**: Linear in the size of `*this` and `sz`.
    */
-  void resize(size_type sz, const T& c)
+  void resize_back(size_type sz, const T& c)
   {
     if (sz >= size())
     {
-      for (size_type diff = sz - size(); diff; --diff)
+      const size_type old_size = size();
+      BOOST_TRY
       {
-        push_back(c);
+        for (size_type to_add = sz - size(); to_add; --to_add)
+        {
+          push_back(c);
+        }
       }
+      BOOST_CATCH(...)
+      {
+        for (size_type to_remove = size() - old_size; to_remove; --to_remove)
+        {
+          pop_back();
+        }
+        BOOST_RETHROW;
+      }
+      BOOST_CATCH_END
     }
     else
     {
@@ -1970,6 +2100,8 @@ private:
     {
       deallocate_segment(segment);
     }
+
+    _map.clear();
   }
 
   void deallocate_segments(const const_map_iterator first, const const_map_iterator last)
@@ -2213,25 +2345,12 @@ private:
   void erase_at_begin(iterator new_begin)
   {
     destroy_elements(begin(), new_begin);
-
-    const_map_iterator new_map_begin = new_begin._p_segment;
-    deallocate_segments(_map.begin(), new_map_begin);
     _begin = new_begin;
   }
 
   void erase_at_end(iterator new_end)
   {
     destroy_elements(new_end, end());
-
-    const_map_iterator new_map_end = new_end._p_segment;
-
-    if (new_end._index)
-    {
-      BOOST_ASSERT(new_map_end != _map.end());
-      ++new_map_end;
-    }
-
-    deallocate_segments(new_map_end, _map.end());
     _end = new_end;
   }
 

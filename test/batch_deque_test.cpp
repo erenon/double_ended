@@ -1119,27 +1119,151 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(capacity, Deque, all_deques)
   }
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(resize_front_value, Deque, t_is_default_constructible)
+{
+  typedef typename Deque::value_type T;
+
+  {
+    Deque a;
+    a.resize_front(0);
+    BOOST_TEST(a.empty());
+
+    a.emplace_front(1);
+    a.resize_front(10);
+    BOOST_TEST(a.size() == 10u);
+    test_equal_range(a, {0,0,0,0,0,0,0,0,0,1});
+
+    a.resize_front(10);
+    BOOST_TEST(a.size() == 10u);
+    test_equal_range(a, {0,0,0,0,0,0,0,0,0,1});
+
+    a.resize_front(5);
+    BOOST_TEST(a.size() == 5u);
+    test_equal_range(a, {0,0,0,0,1});
+
+    a.resize_front(0);
+    BOOST_TEST(a.empty());
+  }
+
+  {
+    Deque b = get_range<Deque>(10);
+    b.reserve_front(48);
+    b.resize_front(5);
+    test_equal_range(b, {6, 7, 8, 9, 10});
+  }
+
+  if (! std::is_nothrow_constructible<T>::value)
+  {
+    Deque c = get_range<Deque>(5);
+    test_elem_throw::on_ctor_after(3);
+
+    try
+    {
+      c.resize_front(256);
+      BOOST_TEST(false);
+    }
+    catch (const test_exception&) {}
+
+    test_equal_range(c, {1, 2, 3, 4, 5});
+  }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(resize_front_copy, Deque, t_is_copy_constructible)
+{
+  typedef typename Deque::value_type T;
+  const T x(9);
+
+  {
+    Deque a;
+    a.resize_front(0, x);
+    BOOST_TEST(a.empty());
+
+    a.emplace_front(1);
+    a.resize_front(10, x);
+    BOOST_TEST(a.size() == 10u);
+    test_equal_range(a, {9,9,9,9,9,9,9,9,9,1});
+
+    a.resize_front(10, x);
+    BOOST_TEST(a.size() == 10u);
+    test_equal_range(a, {9,9,9,9,9,9,9,9,9,1});
+
+    a.resize_front(5, x);
+    BOOST_TEST(a.size() == 5u);
+    test_equal_range(a, {9,9,9,9,1});
+
+    a.resize_front(0, x);
+    BOOST_TEST(a.empty());
+  }
+
+  {
+    Deque b = get_range<Deque>(10);
+    b.reserve_front(48);
+    b.resize_front(5, x);
+    test_equal_range(b, {6, 7, 8, 9, 10});
+  }
+
+  if (! std::is_nothrow_copy_constructible<T>::value)
+  {
+    Deque c = get_range<Deque>(5);
+    test_elem_throw::on_copy_after(14);
+
+    try
+    {
+      c.resize_front(256, x);
+      BOOST_TEST(false);
+    }
+    catch (const test_exception&) {}
+
+    test_equal_range(c, {1, 2, 3, 4, 5});
+  }
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(resize_value, Deque, t_is_default_constructible)
 {
+  typedef typename Deque::value_type T;
+
   {
     Deque a;
     a.resize(0);
     BOOST_TEST(a.empty());
 
+    a.emplace_back(1);
     a.resize(10);
     BOOST_TEST(a.size() == 10u);
-    test_equal_range(a, {0,0,0,0,0,0,0,0,0,0});
+    test_equal_range(a, {1,0,0,0,0,0,0,0,0,0});
 
     a.resize(10);
     BOOST_TEST(a.size() == 10u);
-    test_equal_range(a, {0,0,0,0,0,0,0,0,0,0});
+    test_equal_range(a, {1,0,0,0,0,0,0,0,0,0});
 
     a.resize(5);
     BOOST_TEST(a.size() == 5u);
-    test_equal_range(a, {0,0,0,0,0});
+    test_equal_range(a, {1,0,0,0,0});
 
     a.resize(0);
     BOOST_TEST(a.empty());
+  }
+
+  {
+    Deque b = get_range<Deque>(10);
+    b.reserve_back(48);
+    b.resize_back(5);
+    test_equal_range(b, {1, 2, 3, 4, 5});
+  }
+
+  if (! std::is_nothrow_constructible<T>::value)
+  {
+    Deque c = get_range<Deque>(5);
+    test_elem_throw::on_ctor_after(3);
+
+    try
+    {
+      c.resize(256);
+      BOOST_TEST(false);
+    }
+    catch (const test_exception&) {}
+
+    test_equal_range(c, {1, 2, 3, 4, 5});
   }
 }
 
@@ -1153,20 +1277,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(resize_copy, Deque, t_is_copy_constructible)
     a.resize(0, x);
     BOOST_TEST(a.empty());
 
+    a.emplace_back(1);
     a.resize(10, x);
     BOOST_TEST(a.size() == 10u);
-    test_equal_range(a, {9,9,9,9,9,9,9,9,9,9});
+    test_equal_range(a, {1,9,9,9,9,9,9,9,9,9});
 
     a.resize(10, x);
     BOOST_TEST(a.size() == 10u);
-    test_equal_range(a, {9,9,9,9,9,9,9,9,9,9});
+    test_equal_range(a, {1,9,9,9,9,9,9,9,9,9});
 
     a.resize(5, x);
     BOOST_TEST(a.size() == 5u);
-    test_equal_range(a, {9,9,9,9,9});
+    test_equal_range(a, {1,9,9,9,9});
 
     a.resize(0, x);
     BOOST_TEST(a.empty());
+  }
+
+  {
+    Deque b = get_range<Deque>(10);
+    b.reserve_back(48);
+    b.resize_back(5, x);
+    test_equal_range(b, {1, 2, 3, 4, 5});
+  }
+
+  if (! std::is_nothrow_copy_constructible<T>::value)
+  {
+    Deque c = get_range<Deque>(5);
+    test_elem_throw::on_copy_after(14);
+
+    try
+    {
+      c.resize(256, T(404));
+      BOOST_TEST(false);
+    }
+    catch (const test_exception&) {}
+
+    test_equal_range(c, {1, 2, 3, 4, 5});
   }
 }
 
