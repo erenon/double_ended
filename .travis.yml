@@ -14,14 +14,12 @@ env:
   matrix:
     # Workaround for: https://github.com/travis-ci/travis-ci/issues/4681
     - TRAVIS_EXTRA_JOB_WORKAROUND=true
-  global:
-    - SANITIZE_DOUBLE_ENDED=true
 
 matrix:
   include:
 
     # GCC 4.8
-    - env: CXX=g++-4.8 CXX_PATH=/usr/bin/g++-4.8 CXX_NAME=gcc
+    - env: CXX=g++-4.8 CXX_PATH=/usr/bin/g++-4.8 CXX_NAME=gcc SANITIZE_DOUBLE_ENDED=true
       addons:
         apt:
           sources:
@@ -30,7 +28,7 @@ matrix:
             - g++-4.8
 
     # GCC 5.3
-    - env: CXX=g++-5 CXX_PATH=/usr/bin/g++-5 CXX_NAME=gcc
+    - env: CXX=g++-5 CXX_PATH=/usr/bin/g++-5 CXX_NAME=gcc SANITIZE_DOUBLE_ENDED=true
       addons:
         apt:
           sources:
