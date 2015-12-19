@@ -18,7 +18,7 @@ doxygen apidoc
   "
   <doxygen:param>INLINE_INHERITED_MEMB=YES
   <doxygen:param>MACRO_EXPANSION=YES
-  <doxygen:param>INCLUDE_PATH=$(BOOST_ROOT)
+  <doxygen:param>INCLUDE_PATH="../include $(BOOST_ROOT)"
   <doxygen:param>EXAMPLE_PATH=../example
   <doxygen:param>SUBGROUPING=NO
   ;
