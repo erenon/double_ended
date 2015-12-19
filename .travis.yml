@@ -11,9 +11,11 @@ branches:
     - master
 
 env:
-  # Workaround for: https://github.com/travis-ci/travis-ci/issues/4681
   matrix:
+    # Workaround for: https://github.com/travis-ci/travis-ci/issues/4681
     - TRAVIS_EXTRA_JOB_WORKAROUND=true
+  global:
+    - SANITIZE_DOUBLE_ENDED=true
 
 matrix:
   include:
@@ -70,9 +72,10 @@ install:
   - export BOOST_BUILD_PATH=${BOOST_ROOT}
 
   # Setup Boost.Build
-  - cd ${BOOST_ROOT}/tools/build/
-  - ./bootstrap.sh # build b2
-  - export PATH=${BOOST_ROOT}/tools/build:${PATH}
+  - cd ${BOOST_ROOT}
+  - ./bootstrap.sh --with-libraries=serialization # build b2
+  - ./b2 -j4  # build libraries
+  - export PATH=${BOOST_ROOT}:${PATH}
 
   - cd ${TRAVIS_BUILD_DIR}
 

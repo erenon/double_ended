@@ -105,4 +105,15 @@ This feature can be useful, if reference stability and relative order is require
 
 [endsect]
 
+[section:serialize_containers Serialize containers]
+
+The `double_ended` containers play well with the Boost.Serialization library. Any container can be
+serialized, as long as its value type can be serialized as well.
+
+[import ../example/doc_serialize.cpp]
+
+[doc_serialize_basics]
+
+[endsect]
+
 [endsect]

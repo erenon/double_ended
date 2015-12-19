@@ -11,20 +11,35 @@ project boost/double_ended
   ;
 
 local toolset =
-    <toolset>gcc:<cxxflags>-Wextra
-    <toolset>gcc:<cxxflags>-Werror
-    <toolset>gcc:<cxxflags>-std=c++11
-    <toolset>gcc:<cxxflags>-isystem=$(BOOST_ROOT)
-    <toolset>gcc:<cxxflags>-fsanitize=address
-    <toolset>gcc:<linkflags>-Wl,-lasan
+  <toolset>gcc:<cxxflags>-Wextra
+  <toolset>gcc:<cxxflags>-Werror
+  <toolset>gcc:<cxxflags>-std=c++11
+  <toolset>gcc:<cxxflags>-isystem=$(BOOST_ROOT)
 
-    <toolset>clang:<cxxflags>-Wextra
-    <toolset>clang:<cxxflags>-Werror
-    <toolset>clang:<cxxflags>-std=c++11
-    <toolset>clang:<cxxflags>-I$(BOOST_ROOT)
-    <toolset>clang:<cxxflags>--system-header-prefix=boost/
-    <toolset>clang:<cxxflags>--no-system-header-prefix=boost/double_ended
+  <toolset>clang:<cxxflags>-Wextra
+  <toolset>clang:<cxxflags>-Werror
+  <toolset>clang:<cxxflags>-std=c++11
+  <toolset>clang:<cxxflags>-I$(BOOST_ROOT)
+  <toolset>clang:<cxxflags>--system-header-prefix=boost/
+  <toolset>clang:<cxxflags>--no-system-header-prefix=boost/double_ended
 ;
+
+lib boost_serialization : : <search>$(BOOST_ROOT)/stage/lib ;
+
+local libs = ;
+
+if [ modules.peek : SANITIZE_DOUBLE_ENDED ]
+{
+  ECHO "Sanitize double_ended" ;
+
+  toolset +=
+    <toolset>gcc:<cxxflags>-fsanitize=address
+    <toolset>clang:<cxxflags>-fsanitize=address
+  ;
+
+  lib asan : : <use>boost_serialization <name>asan ;
+  libs += asan ;
+}
 
 rule test_all
 {
@@ -35,7 +50,14 @@ rule test_all
 
    for local source in $(sources)
    {
-      rules += [ run $(source)
+      local actual_libs = $(libs) ;
+
+      if [ MATCH (.*serialize.+) : $(source) ]
+      {
+        actual_libs += boost_serialization ;
+      }
+
+      rules += [ run $(source) $(actual_libs)
       :  # args passed to tests
       :  # input files
       :  # other properties

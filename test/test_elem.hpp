@@ -121,6 +121,12 @@ struct test_elem_base
     return out;
   }
 
+  template <typename Archive>
+  void serialize(Archive& ar, unsigned /* version */)
+  {
+    ar & *_index;
+  }
+
   static bool no_living_elem()
   {
     return _live_count == 0;
