@@ -20,7 +20,7 @@
 #include <boost/aligned_storage.hpp>
 #include <boost/throw_exception.hpp>
 
-#include <boost/double_ended/detail/guards.hpp>
+#include <boost/double_ended/detail/allocator.hpp>
 #include <boost/double_ended/detail/iterators.hpp>
 
 namespace boost {
@@ -163,46 +163,12 @@ class devector
 {
 #ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
 
-  // Deallocate buffer on exception
-  typedef typename detail::allocation_guard<Allocator> allocation_guard;
-
-  // Destroy already constructed elements
-  // TODO enable null guard if required opearations are noexcept
-  typedef typename detail::opt_construction_guard<Allocator> construction_guard;
-
-  // Destroy either source or target
-  typedef typename detail::opt_nand_construction_guard<Allocator> move_guard;
-
-  // Random access pseudo iterator always yielding to the same result
-  typedef detail::constant_iterator<T, int> cvalue_iterator;
-
-  struct allocator_traits : public std::allocator_traits<Allocator>
-  {
-    // before C++14, std::allocator does not specify propagate_on_container_move_assignment,
-    // std::allocator_traits sets it to false. Not something we would like to use.
-    static constexpr bool propagate_on_move_assignment =
-       std::allocator_traits<Allocator>::propagate_on_container_move_assignment::value
-    || std::is_same<Allocator, std::allocator<T>>::value;
-
-    // poor emulation of a C++17 feature
-    static constexpr bool is_always_equal = std::is_empty<Allocator>::value;
-  };
-
-  static constexpr unsigned small_buffer_size = SmallBufferPolicy::size;
-  static constexpr bool     no_small_buffer = (small_buffer_size == 0);
-
-  static constexpr bool t_is_nothrow_constructible =
-       std::is_nothrow_copy_constructible<T>::value
-    || std::is_nothrow_move_constructible<T>::value;
-
-  // TODO use is_trivially_copyable instead of is_pod when available
-  static constexpr bool t_is_trivially_copyable = std::is_pod<T>::type::value;
+  typedef detail::allocator_traits<Allocator> allocator_traits;
 
 #endif // ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
 
-// Standard Interface
 public:
-  // types:
+  // Standard Interface Types:
   typedef T value_type;
   typedef Allocator allocator_type;
   typedef value_type& reference;
@@ -216,6 +182,26 @@ public:
   typedef std::reverse_iterator<iterator> reverse_iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
+#ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
+private:
+
+  typedef typename allocator_traits::allocation_guard allocation_guard;
+  typedef typename allocator_traits::construction_guard construction_guard;
+  typedef typename allocator_traits::move_guard move_guard;
+
+  // Random access pseudo iterator always yielding to the same result
+  typedef detail::constant_iterator<T, difference_type> cvalue_iterator;
+
+  static constexpr bool t_is_nothrow_constructible = allocator_traits::t_is_nothrow_constructible;
+  static constexpr bool t_is_trivially_copyable = allocator_traits::t_is_trivially_copyable;
+
+  static constexpr size_type small_buffer_size = SmallBufferPolicy::size;
+  static constexpr bool no_small_buffer = (small_buffer_size == 0);
+
+#endif // ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
+
+// Standard Interface
+public:
   // construct/copy/destroy
 
   /**

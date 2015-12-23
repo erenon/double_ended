@@ -84,29 +84,12 @@ class batch_deque
 {
 #ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
 
-  struct allocator_traits : public std::allocator_traits<Allocator>
-  {
-    // before C++14, std::allocator does not specify propagate_on_container_move_assignment,
-    // std::allocator_traits sets it to false. Not something we would like to use.
-    static constexpr bool propagate_on_move_assignment =
-       std::allocator_traits<Allocator>::propagate_on_container_move_assignment::value
-    || std::is_same<Allocator, std::allocator<T>>::value;
-
-    // poor emulation of a C++17 feature
-    static constexpr bool is_always_equal = std::is_same<Allocator, std::allocator<T>>::value;
-  };
-
-  static constexpr bool t_is_nothrow_constructible =
-       std::is_nothrow_copy_constructible<T>::value
-    || std::is_nothrow_move_constructible<T>::value;
-
-  // TODO use is_trivially_copyable instead of is_pod when available
-  static constexpr bool t_is_trivially_copyable = std::is_pod<T>::type::value;
+  typedef detail::allocator_traits<Allocator> allocator_traits;
 
 #endif // ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
 
 public:
-
+  // Standard Interface Types:
   typedef T value_type;
   typedef Allocator allocator_type;
 
@@ -118,22 +101,23 @@ public:
   typedef BOOST_DOUBLE_ENDED_IMPDEF(std::size_t)    size_type;
   typedef BOOST_DOUBLE_ENDED_IMPDEF(std::ptrdiff_t) difference_type;
 
-private:
 #ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
+private:
 
+  typedef typename allocator_traits::allocation_guard allocation_guard;
+  typedef typename allocator_traits::construction_guard construction_guard;
+  typedef typename allocator_traits::move_guard move_guard;
+
+  // random access pseudo iterator always yielding to the same result
+  typedef detail::constant_iterator<T, difference_type> cvalue_iterator;
+
+  static constexpr bool t_is_nothrow_constructible = allocator_traits::t_is_nothrow_constructible;
+  static constexpr bool t_is_trivially_copyable = allocator_traits::t_is_trivially_copyable;
 
   typedef typename allocator_traits::template rebind_alloc<pointer> map_allocator;
   typedef devector<pointer, devector_small_buffer_policy<0>, devector_growth_policy, map_allocator> map_t;
   typedef typename map_t::iterator map_iterator;
   typedef typename map_t::const_iterator const_map_iterator;
-
-  // Deallocate buffer on exception
-  typedef typename detail::allocation_guard<Allocator> allocation_guard;
-
-  // Destroy already constructed elements
-  typedef typename detail::opt_construction_guard<Allocator> construction_guard;
-
-  typedef detail::constant_iterator<value_type, difference_type> cvalue_iterator;
 
   static constexpr size_type segment_size = BatchDequePolicy::segment_size;
   static_assert(segment_size > 1, "Segment size must be greater than 1");
