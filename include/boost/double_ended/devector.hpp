@@ -113,27 +113,29 @@ struct unsafe_uninitialized_tag {};
  *  - [CopyAssignable][]: Copy assignment operator
  *
  * Furthermore, not `noexcept` methods throws whatever the allocator throws
- * if memory allocation fails.
+ * if memory allocation fails. Such methods also throw `std::length_error` if the capacity
+ * exceeds `max_size()`.
  *
  * **Remark**: If a method invalidates some iterators, it also invalidates references
  * and pointers to the elements pointed by the invalidated iterators.
  *
  * **Policies**:
  *
- * Models of the `SmallBufferPolicy` concept must have the following static values:
+ * The type `SBP` models the `SmallBufferPolicy` concept if it satisfies the following requirements:
  *
- * Type | Name | Description
- * -----|------|------------
- * `size_type` | `size` | The total number of elements that can be stored without allocation
+ * Expression | Return type | Description
+ * -----------|-------------|------------
+ * `SBP::size` | `size_type` | The total number of elements that can be stored without allocation
  *
  * @ref devector_small_buffer_policy models the `SmallBufferPolicy` concept.
  *
- * Models of the `GrowthPolicy` concept must have the following static methods:
+ * The type `GP` models the `GrowthPolicy` concept if it satisfies the following requirements
+ * when `gp` is an instance of such a class:
  *
- * Signature | Description
- * ----------|------------
- * `size_type new_capacity(size_type old_capacity)` | Computes the new capacity to be allocated. The returned value must be greater than `old_capacity`. This method is always used when a new buffer gets allocated.
- * `bool should_shrink(size_type size, size_type capacity, size_type small_buffer_size)` | Returns `true`, if superfluous memory should be released.
+ * Expression | Return type | Description
+ * -----------|-------------|------------
+ * `gp.new_capacity(old_capacity)` | `size_type` | Computes the new capacity to be allocated. The returned value must be greater than `old_capacity`. This method is always used when a new buffer gets allocated. `old_capacity` is convertible to `size_type`.
+ * `gp.should_shrink(size, capacity, small_buffer_size)` | `bool` | Returns `true`, if superfluous memory should be released. Arguments are convertible to `size_type`.
  *
  * @ref devector_growth_policy models the `GrowthPolicy` concept.
  *

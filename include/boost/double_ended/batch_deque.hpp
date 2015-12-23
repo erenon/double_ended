@@ -23,7 +23,7 @@
 namespace boost {
 namespace double_ended {
 
-/** * Controls the batch_deques implementation defined behavior */
+/** Controls the batch_deques implementation defined behavior */
 template <std::size_t SegmentSize>
 struct batch_deque_policy
 {
@@ -57,11 +57,11 @@ struct batch_deque_policy
  *
  * **Policies**:
  *
- * Models of the `BatchDequePolicy` concept must have the following static values:
+ * The type `BDP` models the `BatchDequePolicy` concept if it satisfies the following requirements:
  *
- * Type | Name | Description
- * -----|------|------------
- * `size_type` | `segment_size` | The number of elements a segment can hold. Power of two recommended.
+ * Expression | Return type | Description
+ * -----------|-------------|------------
+ * `BDP::segment_size` | `size_type` | The number of elements a segment can hold. Power of two recommended. Must be a compile time constant.
  *
  * @ref batch_deque_policy models the `BatchDequePolicy` concept.
  *
