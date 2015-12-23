@@ -47,12 +47,16 @@ struct devector_small_buffer_policy
 struct devector_growth_policy
 {
   /**
+   * Sets the `size_type` type of the devector.
+   */
+  typedef unsigned int size_type;
+
+  /**
    * **Returns**: 4 times the old capacity or 16 if it's 0.
    *
    * @param capacity The current capacity of the devector, equals to `capacity()`.
    */
-  template <class SizeType>
-  static SizeType new_capacity(SizeType capacity)
+  static size_type new_capacity(size_type capacity)
   {
     return (capacity) ? capacity * 4u : 16u;
   }
@@ -64,8 +68,7 @@ struct devector_growth_policy
    * @param capacity The current capacity of the devector, equals to `capacity()`.
    * @param small_buffer_size The size of the small buffer, specified by the `SmallBufferPolicy`.
    */
-  template <class SizeType>
-  static bool should_shrink(SizeType size, SizeType capacity, SizeType small_buffer_size)
+  static bool should_shrink(size_type size, size_type capacity, size_type small_buffer_size)
   {
     (void)capacity;
     return size <= small_buffer_size;
@@ -134,6 +137,7 @@ struct unsafe_uninitialized_tag {};
  *
  * Expression | Return type | Description
  * -----------|-------------|------------
+ * `GP::size_type` | Unsigned integral type | Sets the `size_type` type of the `devector`, thus the maximum number of elements it can hold. Must be a compile time constant.
  * `gp.new_capacity(old_capacity)` | `size_type` | Computes the new capacity to be allocated. The returned value must be greater than `old_capacity`. This method is always used when a new buffer gets allocated. `old_capacity` is convertible to `size_type`.
  * `gp.should_shrink(size, capacity, small_buffer_size)` | `bool` | Returns `true`, if superfluous memory should be released. Arguments are convertible to `size_type`.
  *
@@ -179,8 +183,8 @@ public:
   typedef typename allocator_traits::const_pointer const_pointer;
   typedef pointer iterator;
   typedef const_pointer const_iterator;
-  typedef unsigned int size_type;
-  typedef int difference_type;
+  typedef typename GrowthPolicy::size_type size_type;
+  typedef typename std::make_signed<size_type>::type difference_type;
   typedef std::reverse_iterator<iterator> reverse_iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 

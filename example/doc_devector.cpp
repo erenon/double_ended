@@ -21,6 +21,8 @@
 //[doc_devector_growth_policy
 struct custom_growth_policy
 {
+  using size_type = unsigned int;
+
   static constexpr unsigned growth_factor = 2u;
   static constexpr unsigned initial_size = 16u;
 

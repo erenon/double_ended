@@ -46,6 +46,21 @@ struct different_allocator : public std::allocator<T>
   using propagate_on_container_swap = std::true_type;
 };
 
+template <typename SizeType>
+struct different_growth_policy
+{
+  typedef SizeType size_type;
+
+  static size_type new_capacity(size_type capacity)
+  {
+    return (capacity) ? capacity * 4u : 32u;
+  }
+
+  static bool should_shrink(size_type size, size_type capacity, size_type small_buffer_size)
+  {
+    return false;
+  }
+};
 
 #if 1
 typedef boost::mpl::list<
@@ -64,7 +79,9 @@ typedef boost::mpl::list<
   small_devector<no_default_ctor>,
 
   devector<unsigned, devector_small_buffer_policy<0>, devector_growth_policy, different_allocator<unsigned>>,
-  devector<unsigned, devector_small_buffer_policy<16>, devector_growth_policy, different_allocator<unsigned>>
+  devector<unsigned, devector_small_buffer_policy<16>, devector_growth_policy, different_allocator<unsigned>>,
+
+  devector<unsigned, devector_small_buffer_policy<8>, different_growth_policy<std::size_t>>
 > all_devectors;
 #else
 typedef boost::mpl::list<
@@ -1234,10 +1251,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_empty, Devector, all_devectors)
   BOOST_TEST(! c.empty());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(test_max_size, Devector, all_devectors)
+template <typename ST>
+using gp_devector = devector<unsigned, devector_small_buffer_policy<8>, different_growth_policy<ST>>;
+
+BOOST_AUTO_TEST_CASE(test_max_size)
 {
-  Devector a;
-  BOOST_TEST(a.max_size() == std::numeric_limits<unsigned int>::max());
+  gp_devector<unsigned char> a;
+  BOOST_TEST(a.max_size() == std::numeric_limits<unsigned char>::max());
+
+  gp_devector<unsigned short> b;
+  BOOST_TEST(b.max_size() == std::numeric_limits<unsigned short>::max());
+
+  gp_devector<unsigned int> c;
+  BOOST_TEST(c.max_size() >= b.max_size());
+
+  gp_devector<unsigned long long> d;
+  BOOST_TEST(d.max_size() >= c.max_size());
+}
+
+BOOST_AUTO_TEST_CASE(test_exceeding_max_size)
+{
+  using Devector = gp_devector<unsigned char>;
+
+  Devector a(std::numeric_limits<typename Devector::size_type>::max());
+  BOOST_CHECK_THROW(a.emplace_back(404), std::length_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_size, Devector, all_devectors)
