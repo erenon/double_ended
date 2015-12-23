@@ -56,7 +56,7 @@ struct different_growth_policy
     return (capacity) ? capacity * 4u : 32u;
   }
 
-  static bool should_shrink(size_type size, size_type capacity, size_type small_buffer_size)
+  static bool should_shrink(size_type, size_type, size_type)
   {
     return false;
   }

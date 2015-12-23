@@ -11,11 +11,13 @@ project boost/double_ended
   ;
 
 local toolset =
+  <toolset>gcc:<cxxflags>-Wall
   <toolset>gcc:<cxxflags>-Wextra
   <toolset>gcc:<cxxflags>-Werror
   <toolset>gcc:<cxxflags>-std=c++11
   <toolset>gcc:<cxxflags>-isystem=$(BOOST_ROOT)
 
+  <toolset>clang:<cxxflags>-Wall
   <toolset>clang:<cxxflags>-Wextra
   <toolset>clang:<cxxflags>-Werror
   <toolset>clang:<cxxflags>-std=c++11
