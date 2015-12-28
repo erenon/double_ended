@@ -304,11 +304,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_n, Devector, t_is_default_constru
   {
     test_elem_throw::on_ctor_after(4);
 
-    try
-    {
-      Devector a(8);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Devector a(8), test_exception);
 
     BOOST_TEST(test_elem_base::no_living_elem());
   }
@@ -336,16 +332,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_n_copy, Devector, t_is_copy_const
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
     test_elem_throw::on_copy_after(4);
+    const T x(404);
 
-    try
-    {
-      const T x(404);
-      Devector a(8, x);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
-
-    BOOST_TEST(test_elem_base::no_living_elem());
+    BOOST_CHECK_THROW(Devector a(8, x), test_exception);
   }
+
+  BOOST_TEST(test_elem_base::no_living_elem());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_input_range, Devector, t_is_copy_constructible)
@@ -384,11 +376,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_input_range, Devector, t_is_copy_
 
     test_elem_throw::on_copy_after(4);
 
-    try
-    {
-      Devector c(input_begin, input_end);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Devector c(input_begin, input_end), test_exception);
   }
 
   BOOST_TEST(test_elem_base::no_living_elem());
@@ -418,11 +406,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_forward_range, Devector, t_is_cop
   {
     test_elem_throw::on_copy_after(4);
 
-    try
-    {
-      Devector c(x.begin(), x.end());
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Devector c(x.begin(), x.end()), test_exception);
   }
 }
 
@@ -452,11 +436,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_pointer_range, Devector, t_is_cop
   {
     test_elem_throw::on_copy_after(4);
 
-    try
-    {
-      Devector c(xbeg, xend);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Devector c(xbeg, xend), test_exception);
   }
 }
 
@@ -486,11 +466,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_copy_constructor, Devector, t_is_copy_constru
 
     test_elem_throw::on_copy_after(4);
 
-    try
-    {
-      Devector b(a);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Devector b(a), test_exception);
   }
 }
 
@@ -616,11 +592,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      a = b;
-      BOOST_TEST(false);
-    } catch(const test_exception&) {}
+    BOOST_CHECK_THROW(a = b, test_exception);
 
     assert_equals(a, {1, 2, 3, 4, 5, 6});
   }
@@ -874,11 +846,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
 
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      a.assign(input_begin, input_end);
-      BOOST_TEST(false);
-    } catch(const test_exception&) {}
+    BOOST_CHECK_THROW(a.assign(input_begin, input_end), test_exception);
 
     assert_equals(a, {1, 2, 3, 4, 5, 6});
   }
@@ -961,11 +929,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      a.assign(one, twelve);
-      BOOST_TEST(false);
-    } catch(const test_exception&) {}
+    BOOST_CHECK_THROW(a.assign(one, twelve), test_exception);
 
     assert_equals(a, {1, 2, 3, 4, 5, 6});
   }
@@ -1045,11 +1009,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      a.assign(one, twelve);
-      BOOST_TEST(false);
-    } catch(const test_exception&) {}
+    BOOST_CHECK_THROW(a.assign(one, twelve), test_exception);
 
     assert_equals(a, {1, 2, 3, 4, 5, 6});
   }
@@ -1124,11 +1084,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      a.assign(32, T(9));
-      BOOST_TEST(false);
-    } catch(const test_exception&) {}
+    BOOST_CHECK_THROW(a.assign(32, T(9)), test_exception);
 
     assert_equals(a, {1, 2, 3, 4, 5, 6});
   }
@@ -1203,11 +1159,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      a.assign({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18});
-      BOOST_TEST(false);
-    } catch(const test_exception&) {}
+    BOOST_CHECK_THROW(a.assign({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}), test_exception);
 
     assert_equals(a, {1, 2, 3, 4, 5, 6});
   }
@@ -1348,12 +1300,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
     auto origi_begin = d.begin();
     test_elem_throw::on_ctor_after(3);
 
-    try
-    {
-      d.resize_front(256);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(d.resize_front(256), test_exception);
 
     assert_equals(d, d_origi);
     BOOST_TEST(origi_begin == d.begin());
@@ -1408,12 +1355,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
     std::vector<T> c_origi = get_range<std::vector<T>>(5);
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      c.resize_front(256, T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_front(256, T(404)), test_exception);
 
     assert_equals(c, c_origi);
   }
@@ -1426,12 +1368,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
     auto origi_begin = c.begin();
     test_elem_throw::on_copy_after(7);
 
-    try
-    {
-      c.resize_front(256, T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_front(256, T(404)), test_exception);
 
     assert_equals(c, c_origi);
     BOOST_TEST(origi_begin == c.begin());
@@ -1507,12 +1444,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
     auto origi_begin = d.begin();
     test_elem_throw::on_ctor_after(3);
 
-    try
-    {
-      d.resize_back(256);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(d.resize_back(256), test_exception);
 
     assert_equals(d, d_origi);
     BOOST_TEST(origi_begin == d.begin());
@@ -1567,12 +1499,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
     std::vector<T> c_origi = get_range<std::vector<T>>(5);
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      c.resize_back(256, T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_back(256, T(404)), test_exception);
 
     assert_equals(c, c_origi);
   }
@@ -1585,12 +1512,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
     auto origi_begin = c.begin();
     test_elem_throw::on_copy_after(7);
 
-    try
-    {
-      c.resize_back(256, T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_back(256, T(404)), test_exception);
 
     assert_equals(c, c_origi);
     BOOST_TEST(origi_begin == c.begin());
@@ -1604,12 +1526,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
     auto origi_begin = c.begin();
     test_elem_throw::on_copy_after(3);
 
-    try
-    {
-      c.resize_back(256, T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_back(256, T(404)), test_exception);
 
     assert_equals(c, c_origi);
     BOOST_TEST(origi_begin == c.begin());
@@ -1882,11 +1799,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_at, Devector, all_devectors)
     a.at(0) = T(100);
     BOOST_TEST(a.at(0) == T(100));
 
-    try
-    {
-      a.at(3);
-      BOOST_TEST(false);
-    } catch (const std::out_of_range&) {}
+    BOOST_CHECK_THROW(a.at(3), std::out_of_range);
   }
 
   { // const at
@@ -1894,11 +1807,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_at, Devector, all_devectors)
 
     BOOST_TEST(a.at(0) == T(1));
 
-    try
-    {
-      a.at(3);
-      BOOST_TEST(false);
-    } catch (const std::out_of_range&) {}
+    BOOST_CHECK_THROW(a.at(3), std::out_of_range);
   }
 }
 
@@ -1979,13 +1888,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace_front, Devector, all_devectors)
     Devector b = get_range<Devector>(4);
     auto origi_begin = b.begin();
 
-    try
-    {
-      test_elem_throw::on_ctor_after(1);
-      b.emplace_front(404);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_ctor_after(1);
+
+    BOOST_CHECK_THROW(b.emplace_front(404), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2017,14 +1922,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_front, Devector, t_is_copy_constructible
     Devector b = get_range<Devector>(4);
     auto origi_begin = b.begin();
 
-    try
-    {
-      T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.push_front(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.push_front(elem), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2064,13 +1965,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_front_rvalue, Devector, all_devectors)
     Devector b = get_range<Devector>(4);
     auto origi_begin = b.begin();
 
-    try
-    {
-      test_elem_throw::on_move_after(1);
-      b.push_front(T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_move_after(1);
+
+    BOOST_CHECK_THROW(b.push_front(T(404)), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2104,14 +2001,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_push_front, Devector, t_is_copy_constr
     b.reserve_front(5);
     auto origi_begin = b.begin();
 
-    try
-    {
-      T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.unsafe_push_front(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.unsafe_push_front(elem), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2193,13 +2086,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace_back, Devector, all_devectors)
     Devector b = get_range<Devector>(4);
     auto origi_begin = b.begin();
 
-    try
-    {
-      test_elem_throw::on_ctor_after(1);
-      b.emplace_back(404);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_ctor_after(1);
+
+    BOOST_CHECK_THROW(b.emplace_back(404), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2230,14 +2119,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_back, Devector, t_is_copy_constructible)
     Devector b = get_range<Devector>(4);
     auto origi_begin = b.begin();
 
-    try
-    {
-      T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.push_back(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.push_back(elem), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2276,13 +2161,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_back_rvalue, Devector, all_devectors)
     Devector b = get_range<Devector>(4);
     auto origi_begin = b.begin();
 
-    try
-    {
-      test_elem_throw::on_move_after(1);
-      b.push_back(T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_move_after(1);
+
+    BOOST_CHECK_THROW(b.push_back(T(404)), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2315,14 +2196,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_push_back, Devector, t_is_copy_constru
     b.reserve(5);
     auto origi_begin = b.begin();
 
-    try
-    {
-      T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.unsafe_push_back(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.unsafe_push_back(elem), test_exception);
 
     auto new_begin = b.begin();
 
@@ -2472,13 +2349,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     Devector j = get_range<Devector>(4);
     auto origi_begin = j.begin();
 
-    try
-    {
-      test_elem_throw::on_ctor_after(1);
-      j.emplace(j.begin() + 2, 404);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_ctor_after(1);
+
+    BOOST_CHECK_THROW(j.emplace(j.begin() + 2, 404), test_exception);
 
     assert_equals(j, {1, 2, 3, 4});
     BOOST_TEST(origi_begin == j.begin());
@@ -2495,14 +2368,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
 //    Devector k = get_range<Devector>(8);
 //    auto origi_begin = k.begin();
 //
-//    try
-//    {
-//      test_elem_throw::on_copy_after(3);
-//      test_elem_throw::on_move_after(3);
-//      k.emplace(k.begin() + 4, 404);
-//      BOOST_TEST(false);
-//    }
-//    catch (const test_exception&) {}
+//    test_elem_throw::on_copy_after(3);
+//    test_elem_throw::on_move_after(3);
+//
+//    BOOST_CHECK_THROW(k.emplace(k.begin() + 4, 404), test_exception);
 //
 //    test_elem_throw::do_not_throw();
 //
@@ -2604,13 +2473,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     Devector j = get_range<Devector>(4);
     auto origi_begin = j.begin();
 
-    try
-    {
-      test_elem_throw::on_copy_after(1);
-      j.insert(j.begin() + 2, test_elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(j.insert(j.begin() + 2, test_elem), test_exception);
 
     assert_equals(j, {1, 2, 3, 4});
     BOOST_TEST(origi_begin == j.begin());
@@ -2724,13 +2589,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     Devector j = get_range<Devector>(4);
     auto origi_begin = j.begin();
 
-    try
-    {
-      test_elem_throw::on_ctor_after(1);
-      j.insert(j.begin() + 2, 404);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_ctor_after(1);
+
+    BOOST_CHECK_THROW(j.insert(j.begin() + 2, 404), test_exception);
 
     assert_equals(j, {1, 2, 3, 4});
     BOOST_TEST(origi_begin == j.begin());
@@ -2878,30 +2739,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
     // insert at begin
-    try
     {
       Devector j = get_range<Devector>(4);
 
       const T x(404);
       test_elem_throw::on_copy_after(3);
 
-      j.insert(j.begin(), 4, x);
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(j.insert(j.begin(), 4, x), test_exception);
     }
-    catch (test_exception&) {}
 
     // insert at end
-    try
     {
       Devector k = get_range<Devector>(4);
 
       const T x(404);
       test_elem_throw::on_copy_after(3);
 
-      k.insert(k.end(), 4, x);
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(k.insert(k.end(), 4, x), test_exception);
     }
-    catch (test_exception&) {}
   }
 }
 
@@ -3068,7 +2923,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
     // insert at begin
-    try
     {
       devector<T> input = x;
 
@@ -3079,13 +2933,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
       test_elem_throw::on_copy_after(3);
 
-      j.insert(j.begin(), input_begin, input_end);
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(j.insert(j.begin(), input_begin, input_end), test_exception);
     }
-    catch (test_exception&) {}
 
     // insert at end
-    try
     {
       devector<T> input = x;
 
@@ -3096,10 +2947,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
       test_elem_throw::on_copy_after(3);
 
-      k.insert(k.end(), input_begin, input_end);
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(k.insert(k.end(), input_begin, input_end), test_exception);
     }
-    catch (test_exception&) {}
   }
 }
 
@@ -3223,28 +3072,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
     // insert at begin
-    try
     {
       Devector j = get_range<Devector>(4);
 
       test_elem_throw::on_copy_after(3);
 
-      j.insert(j.begin(), xb, xb+4);
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(j.insert(j.begin(), xb, xb+4), test_exception);
     }
-    catch (test_exception&) {}
 
     // insert at end
-    try
     {
       Devector k = get_range<Devector>(4);
 
       test_elem_throw::on_copy_after(3);
 
-      k.insert(k.end(), xb, xb+4);
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(k.insert(k.end(), xb, xb+4), test_exception);
     }
-    catch (test_exception&) {}
   }
 }
 
@@ -3348,28 +3191,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
     // insert at begin
-    try
     {
       Devector j = get_range<Devector>(4);
 
       test_elem_throw::on_copy_after(3);
 
-      j.insert(j.begin(), {T(9), T(9), T(9), T(9), T(9)});
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(j.insert(j.begin(), {T(9), T(9), T(9), T(9), T(9)}), test_exception);
     }
-    catch (test_exception&) {}
 
     // insert at end
-    try
     {
       Devector k = get_range<Devector>(4);
 
       test_elem_throw::on_copy_after(3);
 
-      k.insert(k.end(), {T(9), T(9), T(9), T(9), T(9)});
-      BOOST_TEST(false);
+    BOOST_CHECK_THROW(k.insert(k.end(), {T(9), T(9), T(9), T(9), T(9)}), test_exception);
     }
-    catch (test_exception&) {}
   }
 }
 
@@ -3560,11 +3397,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
     test_elem_throw::on_copy_after(4);
     test_elem_throw::on_move_after(4);
 
-    try
-    {
-      swap(a, b);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(swap(a, b), test_exception);
 
     test_elem_throw::do_not_throw();
   }
@@ -3584,11 +3417,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
     test_elem_throw::on_copy_after(4);
     test_elem_throw::on_move_after(4);
 
-    try
-    {
-      swap(small, big);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(swap(small, big), test_exception);
 
     test_elem_throw::do_not_throw();
 

@@ -258,11 +258,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_n_value, Deque, t_is_default_construct
   {
     test_elem_throw::on_ctor_after(10);
 
-    try
-    {
-      Deque a(12);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Deque a(12), test_exception);
 
     BOOST_TEST(test_elem_base::no_living_elem());
   }
@@ -304,15 +300,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_n_copy, Deque, t_is_copy_constructible
   {
     test_elem_throw::on_copy_after(10);
 
-    try
-    {
-      const T x(9);
-      Deque a(12, x);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    const T x(9);
 
-    BOOST_TEST(test_elem_base::no_living_elem());
+    BOOST_CHECK_THROW(Deque a(12, x), test_exception);
   }
+
+  BOOST_TEST(test_elem_base::no_living_elem());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_input_range, Deque, t_is_copy_constructible)
@@ -348,11 +341,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_input_range, Deque, t_is_copy_construc
 
     test_elem_throw::on_copy_after(17);
 
-    try
-    {
-      Deque c(input_begin, input_end);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Deque c(input_begin, input_end), test_exception);
   }
 
   BOOST_TEST(test_elem_base::no_living_elem());
@@ -377,11 +366,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_forward_range, Deque, t_is_copy_constr
   {
     test_elem_throw::on_copy_after(10);
 
-    try
-    {
-      Deque c(x.begin(), x.end());
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Deque c(x.begin(), x.end()), test_exception);
   }
 }
 
@@ -409,11 +394,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(copy_constructor, Deque, t_is_copy_constructible)
 
     test_elem_throw::on_copy_after(12);
 
-    try
-    {
-      Deque b(a);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(Deque b(a), test_exception);
   }
 
   BOOST_TEST(test_elem_base::no_living_elem());
@@ -528,11 +509,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_copy_assign, Deque, t_is_copy_constructible)
     test_elem_throw::on_copy_after(2);
     test_elem_throw::on_move_after(2);
 
-    try
-    {
-      e = input;
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(e = input, test_exception);
 
     test_elem_throw::do_not_throw();
   }
@@ -719,11 +696,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(assign_input_range, Deque, t_is_copy_constructible
     test_elem_throw::on_copy_after(2);
     test_elem_throw::on_move_after(2);
 
-    try
-    {
-      e.assign(input_begin, input_end);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(e.assign(input_begin, input_end), test_exception);
 
     test_elem_throw::do_not_throw();
   }
@@ -799,11 +772,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(assign_forward_range, Deque, t_is_copy_constructib
     test_elem_throw::on_copy_after(2);
     test_elem_throw::on_move_after(2);
 
-    try
-    {
-      e.assign(input_begin, input_end);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(e.assign(input_begin, input_end), test_exception);
 
     test_elem_throw::do_not_throw();
   }
@@ -876,11 +845,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(assign_n_copy, Deque, t_is_copy_constructible)
     test_elem_throw::on_copy_after(2);
     test_elem_throw::on_move_after(2);
 
-    try
-    {
-      e.assign(10, input);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(e.assign(10, input), test_exception);
 
     test_elem_throw::do_not_throw();
   }
@@ -949,11 +914,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(assign_il, Deque, t_is_copy_constructible)
     test_elem_throw::on_copy_after(2);
     test_elem_throw::on_move_after(2);
 
-    try
-    {
-      e.assign({404,404,404,404,404});
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(e.assign({404,404,404,404,404}), test_exception);
 
     test_elem_throw::do_not_throw();
   }
@@ -1157,12 +1118,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(resize_front_value, Deque, t_is_default_constructi
     Deque c = get_range<Deque>(5);
     test_elem_throw::on_ctor_after(3);
 
-    try
-    {
-      c.resize_front(256);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_front(256), test_exception);
 
     test_equal_range(c, {1, 2, 3, 4, 5});
   }
@@ -1207,12 +1163,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(resize_front_copy, Deque, t_is_copy_constructible)
     Deque c = get_range<Deque>(5);
     test_elem_throw::on_copy_after(14);
 
-    try
-    {
-      c.resize_front(256, x);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize_front(256, x), test_exception);
 
     test_equal_range(c, {1, 2, 3, 4, 5});
   }
@@ -1256,12 +1207,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(resize_value, Deque, t_is_default_constructible)
     Deque c = get_range<Deque>(5);
     test_elem_throw::on_ctor_after(3);
 
-    try
-    {
-      c.resize(256);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize(256), test_exception);
 
     test_equal_range(c, {1, 2, 3, 4, 5});
   }
@@ -1306,12 +1252,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(resize_copy, Deque, t_is_copy_constructible)
     Deque c = get_range<Deque>(5);
     test_elem_throw::on_copy_after(14);
 
-    try
-    {
-      c.resize(256, T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    BOOST_CHECK_THROW(c.resize(256, T(404)), test_exception);
 
     test_equal_range(c, {1, 2, 3, 4, 5});
   }
@@ -1482,13 +1423,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(emplace_front, Deque, all_deques)
   {
     Deque b = get_range<Deque>(8);
 
-    try
-    {
-      test_elem_throw::on_ctor_after(1);
-      b.emplace_front(404);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_ctor_after(1);
+
+    BOOST_CHECK_THROW(b.emplace_front(404), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
@@ -1514,14 +1451,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(push_front_copy, Deque, t_is_copy_constructible)
   {
     Deque b = get_range<Deque>(10);
 
-    try
-    {
-      const T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.push_front(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.push_front(elem), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
@@ -1547,13 +1480,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(push_front_rvalue, Deque, all_deques)
   {
     Deque b = get_range<Deque>(8);
 
-    try
-    {
-      test_elem_throw::on_move_after(1);
-      b.push_front(T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_move_after(1);
+
+    BOOST_CHECK_THROW(b.push_front(T(404)), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
@@ -1581,14 +1510,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(unsafe_push_front_copy, Deque, t_is_copy_construct
     Deque b = get_range<Deque>(10);
     b.reserve_front(11);
 
-    try
-    {
-      const T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.unsafe_push_front(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.unsafe_push_front(elem), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
@@ -1616,13 +1541,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(unsafe_push_front_rvalue, Deque, all_deques)
     Deque b = get_range<Deque>(8);
     b.reserve_front(9);
 
-    try
-    {
-      test_elem_throw::on_move_after(1);
-      b.unsafe_push_front(T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_move_after(1);
+
+    BOOST_CHECK_THROW(b.unsafe_push_front(T(404)), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
@@ -1646,13 +1567,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(emplace_back, Deque, all_deques)
   {
     Deque b = get_range<Deque>(8);
 
-    try
-    {
-      test_elem_throw::on_ctor_after(1);
-      b.emplace_back(404);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_ctor_after(1);
+
+    BOOST_CHECK_THROW(b.emplace_back(404), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
@@ -1678,14 +1595,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(push_back_copy, Deque, t_is_copy_constructible)
   {
     Deque b = get_range<Deque>(10);
 
-    try
-    {
-      const T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.push_back(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.push_back(elem), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
@@ -1711,13 +1624,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(push_back_rvalue, Deque, all_deques)
   {
     Deque b = get_range<Deque>(8);
 
-    try
-    {
-      test_elem_throw::on_move_after(1);
-      b.push_back(T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_move_after(1);
+
+    BOOST_CHECK_THROW(b.push_back(T(404)), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
@@ -1745,14 +1654,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(unsafe_push_back_copy, Deque, t_is_copy_constructi
     Deque b = get_range<Deque>(10);
     b.reserve_back(11);
 
-    try
-    {
-      const T elem(404);
-      test_elem_throw::on_copy_after(1);
-      b.unsafe_push_back(elem);
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    const T elem(404);
+    test_elem_throw::on_copy_after(1);
+
+    BOOST_CHECK_THROW(b.unsafe_push_back(elem), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
@@ -1780,13 +1685,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(unsafe_push_back_rvalue, Deque, all_deques)
     Deque b = get_range<Deque>(8);
     b.reserve_back(9);
 
-    try
-    {
-      test_elem_throw::on_move_after(1);
-      b.unsafe_push_back(T(404));
-      BOOST_TEST(false);
-    }
-    catch (const test_exception&) {}
+    test_elem_throw::on_move_after(1);
+
+    BOOST_CHECK_THROW(b.unsafe_push_back(T(404)), test_exception);
 
     test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
@@ -1852,11 +1753,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(emplace, Deque, all_deques)
 
     test_elem_throw::on_ctor_after(1);
 
-    try
-    {
-      g.emplace(g.begin() + 4, 404);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(g.emplace(g.begin() + 4, 404), test_exception);
 
     BOOST_TEST(begin == g.begin());
   }
@@ -1924,11 +1821,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insert_copy, Deque, t_is_copy_constructible)
 
     test_elem_throw::on_copy_after(1);
 
-    try
-    {
-      g.insert(g.begin() + 4, x);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(g.insert(g.begin() + 4, x), test_exception);
 
     BOOST_TEST(begin == g.begin());
   }
@@ -1994,11 +1887,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insert_rvalue, Deque, all_deques)
 
     test_elem_throw::on_ctor_after(1);
 
-    try
-    {
-      g.insert(g.begin() + 4, T(404));
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(g.insert(g.begin() + 4, T(404)), test_exception);
 
     BOOST_TEST(begin == g.begin());
   }
@@ -2075,12 +1964,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insert_n_copy, Deque, t_is_copy_constructible)
   {
     test_elem_throw::on_copy_after(10);
 
-    try
-    {
-      Deque g = get_range<Deque>(8);
-      g.insert(g.begin() + 4, 12, x);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    Deque g = get_range<Deque>(8);
+
+    BOOST_CHECK_THROW(g.insert(g.begin() + 4, 12, x), test_exception);
   }
 
   } // scope of x
@@ -2188,14 +2074,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insert_input_range, Deque, t_is_copy_constructible
     auto input_begin = make_input_iterator(input, input.begin());
     auto input_end   = make_input_iterator(input, input.end());
 
+    Deque g = get_range<Deque>(8);
+
     test_elem_throw::on_copy_after(10);
 
-    try
-    {
-      Deque g = get_range<Deque>(8);
-      g.insert(g.begin() + 4, input_begin, input_end);
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(g.insert(g.begin() + 4, input_begin, input_end), test_exception);
   }
 
   BOOST_TEST(test_elem_base::no_living_elem());
@@ -2272,14 +2155,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insert_forward_range, Deque, t_is_copy_constructib
   // exception in the middle
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
+    Deque g = get_range<Deque>(8);
+
     test_elem_throw::on_copy_after(10);
 
-    try
-    {
-      Deque g = get_range<Deque>(8);
-      g.insert(g.begin() + 4, input.begin(), input.end());
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(g.insert(g.begin() + 4, input.begin(), input.end()), test_exception);
   }
 
   } // scope of input
@@ -2352,14 +2232,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insert_il, Deque, t_is_copy_constructible)
   // exception in the middle
   if (! std::is_nothrow_copy_constructible<T>::value)
   {
+    Deque g = get_range<Deque>(8);
+
     test_elem_throw::on_copy_after(10);
 
-    try
-    {
-      Deque g = get_range<Deque>(8);
-      g.insert(g.begin() + 4, {1,2,3,4,5,6,7,8,9,10,11,12});
-      BOOST_TEST(false);
-    } catch (const test_exception&) {}
+    BOOST_CHECK_THROW(g.insert(g.begin() + 4, {1,2,3,4,5,6,7,8,9,10,11,12}), test_exception);
   }
 
   BOOST_TEST(test_elem_base::no_living_elem());
