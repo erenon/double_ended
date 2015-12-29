@@ -13,12 +13,12 @@
 #include <boost/double_ended/batch_deque.hpp>
 #include <boost/assert.hpp>
 
+namespace de = boost::double_ended;
+
 void iterate_segments()
 {
 //[doc_batch_deque_sizing
-  using namespace boost::double_ended; // assumed here and below
-
-  batch_deque<char, batch_deque_policy<256>> deque;
+  de::batch_deque<char, de::batch_deque_policy<256>> deque;
 //]
 
   int fd = 1;
@@ -33,10 +33,8 @@ void iterate_segments()
 
 void insert_stable()
 {
-  using namespace boost::double_ended;
-
 //[doc_batch_deque_stable_insert
-  batch_deque<int> deque{1, 2, 3, 4, 5, 6, 7, 8};
+  de::batch_deque<int> deque{1, 2, 3, 4, 5, 6, 7, 8};
   auto four_it = deque.begin() + 3;
   int& four = *four_it;
 
