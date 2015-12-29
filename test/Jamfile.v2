@@ -24,6 +24,8 @@ local toolset =
   <toolset>clang:<cxxflags>-I$(BOOST_ROOT)
   <toolset>clang:<cxxflags>--system-header-prefix=boost/
   <toolset>clang:<cxxflags>--no-system-header-prefix=boost/double_ended
+
+  <toolset>msvc:<include>$(BOOST_ROOT)
 ;
 
 lib boost_serialization : : <search>$(BOOST_ROOT)/stage/lib ;
