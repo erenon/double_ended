@@ -22,6 +22,7 @@
 
 #include <boost/double_ended/detail/allocator.hpp>
 #include <boost/double_ended/detail/iterators.hpp>
+#include <boost/double_ended/detail/algorithm.hpp>
 
 namespace boost {
 namespace double_ended {
@@ -2000,7 +2001,7 @@ public:
     if (front_distance < back_distance)
     {
       // move n to the right
-      move_if_noexcept_backward(begin(), first, last);
+      detail::move_if_noexcept_backward(begin(), first, last);
 
       for (iterator i = begin(); i != begin() + n; ++i)
       {
@@ -2014,7 +2015,7 @@ public:
     else
     {
       // move n to the left
-      move_if_noexcept(last, end(), first);
+      detail::move_if_noexcept(last, end(), first);
 
       for (iterator i = end() - n; i != end(); ++i)
       {
@@ -2721,22 +2722,6 @@ private:
     {
       alloc_construct(buffer + i, std::forward<Args>(args)...);
       ctr_guard.extend();
-    }
-  }
-
-  void move_if_noexcept(iterator first, iterator last, iterator dst)
-  {
-    while (first != last)
-    {
-      *dst++ = std::move_if_noexcept(*first++);
-    }
-  }
-
-  void move_if_noexcept_backward(iterator first, iterator last, iterator dst_last)
-  {
-    while (first != last)
-    {
-      *(--dst_last) = std::move_if_noexcept(*(--last));
     }
   }
 
