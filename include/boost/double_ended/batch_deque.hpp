@@ -8,8 +8,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef BOOST_DOUBLE_ENDED_FLEX_DEQUE_HPP
-#define BOOST_DOUBLE_ENDED_FLEX_DEQUE_HPP
+#ifndef BOOST_DOUBLE_ENDED_BATCH_DEQUE_HPP
+#define BOOST_DOUBLE_ENDED_BATCH_DEQUE_HPP
 
 #include <iterator> // next, prev
 #include <stdexcept>
@@ -2476,4 +2476,4 @@ void swap(batch_deque<T, P, Allocator>& x, batch_deque<T, P, Allocator>& y) noex
 
 }} // namespace boost::double_ended
 
-#endif // BOOST_DOUBLE_ENDED_FLEX_DEQUE_HPP
+#endif // BOOST_DOUBLE_ENDED_BATCH_DEQUE_HPP
