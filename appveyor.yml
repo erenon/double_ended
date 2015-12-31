@@ -1,0 +1,25 @@
+# Copyright Benedek Thaler 2015-2015
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+os:
+  - Visual Studio 2015
+
+build:
+  verbosity: detailed
+
+configuration:
+  - Debug
+
+branches:
+  only:
+    - master
+
+before_build:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
+  - set BOOST_ROOT=C:\Libraries\boost_1_59_0
+  - set BOOST_BUILD_PATH=C:\Libraries\boost_1_59_0
+
+build_script:
+  - cd C:\projects\double_ended\test
+  - call C:\Libraries\boost_1_59_0\bjam.exe toolset=msvc
