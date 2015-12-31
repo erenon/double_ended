@@ -8,8 +8,6 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <sys/socket.h> // recv
-
 #include <vector>
 #include <string>
 #include <iostream>
@@ -23,6 +21,9 @@
 
 namespace de = boost::double_ended;
 //]
+
+// sys/socket.h, missing on non-POSIX systems
+long recv(int, void*, size_t size, int) { return size; }
 
 //[doc_devector_growth_policy
 struct custom_growth_policy
@@ -111,7 +112,7 @@ int main()
 //[doc_devector_unsafe_uninit
   // int sockfd = socket(...); connect(...);
   de::devector<char> buffer(256, de::unsafe_uninitialized_tag{});
-  ssize_t recvSize = recv(sockfd, buffer.data(), buffer.size(), 0);
+  long recvSize = recv(sockfd, buffer.data(), buffer.size(), 0);
 
   if (recvSize >= 0)
   {

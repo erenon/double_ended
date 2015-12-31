@@ -22,6 +22,8 @@ using namespace boost::double_ended;
 #define BOOST_TEST_MODULE serialize_devector
 #include <boost/test/included/unit_test.hpp>
 
+#include <boost/mpl/list.hpp>
+
 using all_devectors = boost::mpl::list<
   devector<unsigned>,
   devector<regular_elem>

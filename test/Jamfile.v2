@@ -26,6 +26,7 @@ local toolset =
   <toolset>clang:<cxxflags>--no-system-header-prefix=boost/double_ended
 
   <toolset>msvc:<include>$(BOOST_ROOT)
+  <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
 ;
 
 lib boost_serialization : : <search>$(BOOST_ROOT)/stage/lib ;

@@ -20,8 +20,6 @@ namespace detail {
 class null_construction_guard
 {
 public:
-  null_construction_guard() = default;
-
   template <typename... Args>
   null_construction_guard(Args&&...) {}
 

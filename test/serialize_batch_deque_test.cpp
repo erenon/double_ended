@@ -22,6 +22,8 @@ using namespace boost::double_ended;
 #define BOOST_TEST_MODULE serialize_batch_deque
 #include <boost/test/included/unit_test.hpp>
 
+#include <boost/mpl/list.hpp>
+
 using all_batch_deques = boost::mpl::list<
   batch_deque<unsigned>,
   batch_deque<regular_elem>

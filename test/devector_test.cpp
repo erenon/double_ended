@@ -1209,10 +1209,10 @@ using gp_devector = devector<unsigned, devector_small_buffer_policy<8>, differen
 BOOST_AUTO_TEST_CASE(test_max_size)
 {
   gp_devector<unsigned char> a;
-  BOOST_TEST(a.max_size() == std::numeric_limits<unsigned char>::max());
+  BOOST_TEST(a.max_size() == (std::numeric_limits<unsigned char>::max)());
 
   gp_devector<unsigned short> b;
-  BOOST_TEST(b.max_size() == std::numeric_limits<unsigned short>::max());
+  BOOST_TEST(b.max_size() == (std::numeric_limits<unsigned short>::max)());
 
   gp_devector<unsigned int> c;
   BOOST_TEST(c.max_size() >= b.max_size());
@@ -1225,7 +1225,7 @@ BOOST_AUTO_TEST_CASE(test_exceeding_max_size)
 {
   using Devector = gp_devector<unsigned char>;
 
-  Devector a(std::numeric_limits<typename Devector::size_type>::max());
+  Devector a((std::numeric_limits<typename Devector::size_type>::max)());
   BOOST_CHECK_THROW(a.emplace_back(404), std::length_error);
 }
 

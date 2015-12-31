@@ -1076,7 +1076,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(capacity, Deque, all_deques)
 
   {
     Deque b = get_range<Deque>(20);
-    BOOST_TEST(b.capacity() >= 20);
+    BOOST_TEST(b.capacity() >= 20u);
   }
 }
 
@@ -2309,7 +2309,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
-    BOOST_TEST(c.size() >= 16);
+    BOOST_TEST(c.size() >= 16u);
   }
 
   // range to end
@@ -2325,7 +2325,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
-    BOOST_TEST(d.size() >= 16);
+    BOOST_TEST(d.size() >= 16u);
   }
 
   // range to mid mid-segment
@@ -2341,7 +2341,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
-    BOOST_TEST(e.size() >= 18);
+    BOOST_TEST(e.size() >= 18u);
   }
 
   // range to mid segment boundary
@@ -2357,7 +2357,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
-    BOOST_TEST(f.size() >= 17);
+    BOOST_TEST(f.size() >= 17u);
   }
 
   // range to mid segment, no default ctr
@@ -2373,7 +2373,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(stable_insert, Deque, t_is_default_constructible)
 
     check_pointers();
     check_inserted(res, res + x.size());
-    BOOST_TEST(g.size() >= 22);
+    BOOST_TEST(g.size() >= 22u);
   }
 }
 

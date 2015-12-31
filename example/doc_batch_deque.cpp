@@ -8,12 +8,15 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <unistd.h> // write
+#include <vector>
 
 #include <boost/double_ended/batch_deque.hpp>
 #include <boost/assert.hpp>
 
 namespace de = boost::double_ended;
+
+// unistd.h, missing on non-POSIX systems
+int write(int, const void*, size_t) { return -1; }
 
 void iterate_segments()
 {
