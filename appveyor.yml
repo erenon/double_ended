@@ -19,9 +19,14 @@ environment:
   BOOST_ROOT: C:\Libraries\boost_1_59_0
   BOOST_BUILD_PATH: C:\Libraries\boost_1_59_0
 
+install:
+  - cd  C:\Libraries\boost_1_59_0
+  - call .\bootstrap.bat --with-libraries=serialization"
+  - call .\b2
+
 before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
-  - dir C:\Libraries\boost_1_59_0 C:\Libraries C:\projects
+  - dir C:\Libraries\boost_1_59_0 C:\Libraries\boost_1_59_0\stage
 
 build_script:
   - cd C:\projects\double-ended\test
