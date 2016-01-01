@@ -21,7 +21,7 @@ environment:
 
 install:
   - cd  C:\Libraries\boost_1_59_0
-  - call .\bootstrap.bat --with-libraries=serialization"
+  - call .\bootstrap.bat --with-libraries=serialization
   - call .\b2
 
 before_build:
