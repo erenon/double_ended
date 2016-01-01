@@ -15,11 +15,14 @@ branches:
   only:
     - master
 
+environment:
+  - BOOST_ROOT: C:\Libraries\boost_1_59_0
+  - BOOST_BUILD_PATH: C:\Libraries\boost_1_59_0
+
 before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
-  - set BOOST_ROOT=C:\Libraries\boost_1_59_0
-  - set BOOST_BUILD_PATH=C:\Libraries\boost_1_59_0
+  - dir C:\Libraries\boost_1_59_0 C:\Libraries C:\projects
 
 build_script:
   - cd C:\projects\double-ended\test
-  - call C:\Libraries\boost_1_59_0\bjam.exe toolset=msvc
+  - call C:\Libraries\boost_1_59_0\b2.exe toolset=msvc
