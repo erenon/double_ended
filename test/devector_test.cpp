@@ -3498,7 +3498,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_op_lt, Devector, all_devectors)
     Devector a = get_range<Devector>(7);
     Devector b = get_range<Devector>(8);
 
-    BOOST_TEST(a < b);
+    BOOST_TEST((a < b));
   }
 
   { // equal
@@ -3529,14 +3529,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_op_ne, Devector, all_devectors)
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(9);
 
-    BOOST_TEST(a != b);
+    BOOST_TEST((a != b));
   }
 
   { // diff content
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(2,6,6,10);
 
-    BOOST_TEST(a != b);
+    BOOST_TEST((a != b));
   }
 }
 
@@ -3561,7 +3561,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_op_gt, Devector, all_devectors)
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(7);
 
-    BOOST_TEST(a > b);
+    BOOST_TEST((a > b));
   }
 }
 
@@ -3578,14 +3578,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_op_ge, Devector, all_devectors)
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(8);
 
-    BOOST_TEST(a >= b);
+    BOOST_TEST((a >= b));
   }
 
   { // greater than
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(7);
 
-    BOOST_TEST(a >= b);
+    BOOST_TEST((a >= b));
   }
 }
 
@@ -3595,14 +3595,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_op_le, Devector, all_devectors)
     Devector a = get_range<Devector>(7);
     Devector b = get_range<Devector>(8);
 
-    BOOST_TEST(a <= b);
+    BOOST_TEST((a <= b));
   }
 
   { // equal
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(8);
 
-    BOOST_TEST(a <= b);
+    BOOST_TEST((a <= b));
   }
 
   { // greater than

@@ -2576,7 +2576,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_lt, Deque, all_deques)
     Deque a = get_range<Deque>(7);
     Deque b = get_range<Deque>(8);
 
-    BOOST_TEST(a < b);
+    BOOST_TEST((a < b));
   }
 
   { // equal
@@ -2607,14 +2607,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_ne, Deque, all_deques)
     Deque a = get_range<Deque>(8);
     Deque b = get_range<Deque>(9);
 
-    BOOST_TEST(a != b);
+    BOOST_TEST((a != b));
   }
 
   { // diff content
     Deque a = get_range<Deque>(8);
     Deque b = get_range<Deque>(2,6,6,10);
 
-    BOOST_TEST(a != b);
+    BOOST_TEST((a != b));
   }
 }
 
@@ -2638,7 +2638,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_gt, Deque, all_deques)
     Deque a = get_range<Deque>(8);
     Deque b = get_range<Deque>(7);
 
-    BOOST_TEST(a > b);
+    BOOST_TEST((a > b));
   }
 }
 
@@ -2655,14 +2655,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_ge, Deque, all_deques)
     Deque a = get_range<Deque>(8);
     Deque b = get_range<Deque>(8);
 
-    BOOST_TEST(a >= b);
+    BOOST_TEST((a >= b));
   }
 
   { // greater than
     Deque a = get_range<Deque>(8);
     Deque b = get_range<Deque>(7);
 
-    BOOST_TEST(a >= b);
+    BOOST_TEST((a >= b));
   }
 }
 
@@ -2672,14 +2672,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_le, Deque, all_deques)
     Deque a = get_range<Deque>(7);
     Deque b = get_range<Deque>(8);
 
-    BOOST_TEST(a <= b);
+    BOOST_TEST((a <= b));
   }
 
   { // equal
     Deque a = get_range<Deque>(8);
     Deque b = get_range<Deque>(8);
 
-    BOOST_TEST(a <= b);
+    BOOST_TEST((a <= b));
   }
 
   { // greater than
