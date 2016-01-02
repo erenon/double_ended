@@ -1217,7 +1217,7 @@ BOOST_AUTO_TEST_CASE(test_max_size)
   gp_devector<unsigned int> c;
   BOOST_TEST(c.max_size() >= b.max_size());
 
-  gp_devector<unsigned long long> d;
+  gp_devector<std::size_t> d;
   BOOST_TEST(d.max_size() >= c.max_size());
 }
 
