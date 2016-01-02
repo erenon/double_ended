@@ -3409,20 +3409,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
   if (small_buffer_size<Devector>::value && can_throw)
   {
-    Devector small = get_range<Devector>(8);
-    Devector big = get_range<Devector>(32);
+    Devector a = get_range<Devector>(8);
+    Devector b = get_range<Devector>(32);
 
-    std::vector<T> big_ex = get_range<std::vector<T>>(32);
+    const std::vector<T> b_expected = get_range<std::vector<T>>(32);
 
     test_elem_throw::on_copy_after(4);
     test_elem_throw::on_move_after(4);
 
-    BOOST_CHECK_THROW(swap(small, big), test_exception);
+    BOOST_CHECK_THROW(swap(a, b), test_exception);
 
     test_elem_throw::do_not_throw();
 
-    // content of small might be moved
-    assert_equals(big, big_ex);
+    // content of `a` might be moved, do not check that
+    assert_equals(b, b_expected);
   }
 
   // big-big does not copy or move
