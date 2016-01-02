@@ -23,6 +23,7 @@ install:
   - cd  C:\Libraries\boost_1_59_0
   - call .\bootstrap.bat
   - call .\b2 --with-serialization
+  - copy stage\lib\libboost_serialization-vc*-mt-gd-1_*.lib stage\lib\boost_serialization.lib /V
 
 before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
