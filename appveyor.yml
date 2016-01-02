@@ -21,8 +21,8 @@ environment:
 
 install:
   - cd  C:\Libraries\boost_1_59_0
-  - call .\bootstrap.bat --with-libraries=serialization
-  - call .\b2
+  - call .\bootstrap.bat
+  - call .\b2 --with-serialization
 
 before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
