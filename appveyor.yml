@@ -27,7 +27,7 @@ install:
 
 before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
-  - dir C:\Libraries\boost_1_59_0 C:\Libraries\boost_1_59_0\stage
+  - dir C:\Libraries\boost_1_59_0 C:\Libraries\boost_1_59_0\stage\lib
 
 build_script:
   - cd C:\projects\double-ended\test
