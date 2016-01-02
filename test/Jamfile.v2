@@ -27,6 +27,7 @@ local toolset =
 
   <toolset>msvc:<include>$(BOOST_ROOT)
   <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
+  <toolset>msvc:<cxxflags>/bigobj
 ;
 
 lib boost_serialization : : <search>$(BOOST_ROOT)/stage/lib ;
