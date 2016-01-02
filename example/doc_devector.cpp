@@ -79,6 +79,8 @@ int main()
   }
 //]
 
+  std::cin.setstate(std::ios_base::eofbit);
+
 //[doc_devector_reverse_input
   de::devector<std::string> reversed_lines;
   reversed_lines.reserve_front(24);
