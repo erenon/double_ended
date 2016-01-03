@@ -15,11 +15,17 @@
 
 namespace de = boost::double_ended;
 
+namespace detail {
+
 // unistd.h, missing on non-POSIX systems
 int write(int, const void*, size_t) { return -1; }
 
+}
+
 void iterate_segments()
 {
+  using detail::write;
+
 //[doc_batch_deque_sizing
   de::batch_deque<char, de::batch_deque_policy<256>> deque;
 //]
