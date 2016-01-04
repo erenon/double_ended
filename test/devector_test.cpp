@@ -1718,8 +1718,9 @@ void test_shrink_to_fit_always()
   std::vector<unsigned> expected{1, 2, 3};
   assert_equals(a, expected);
 
-  unsigned sb_size = small_buffer_size<Devector>::value;
-  BOOST_TEST(a.capacity() == (std::max)(sb_size, 3u));
+  auto sb_size = small_buffer_size<Devector>::value;
+  auto exp_capacity = (std::max)(sb_size, 3u);
+  BOOST_TEST(a.capacity() == exp_capacity);
 }
 
 template <typename Devector>
