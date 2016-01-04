@@ -2918,11 +2918,6 @@ private:
       return static_cast<T*>(small_buffer_t::address());
     }
 
-    const T* small_buffer_address() const
-    {
-      return static_cast<const T*>(small_buffer_t::address());
-    }
-
     // The only reason _capacity is here to avoid wasting
     // space if `small_buffer_t` is empty.
     size_type _capacity;
