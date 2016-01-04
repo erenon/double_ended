@@ -1165,6 +1165,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
   }
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(get_allocator, Devector, all_devectors)
+{
+  Devector a;
+  (void) a.get_allocator();
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_begin_end, Devector, all_devectors)
 {
   using T = typename Devector::value_type;
