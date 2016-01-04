@@ -1347,11 +1347,12 @@ public:
       _map.pop_front();
     }
 
-    for (auto it = _end._p_segment; it != _map.end(); ++it)
+    auto first_it = _end._p_segment + (_end._index != 0);
+    for (auto it = first_it; it != _map.end(); ++it)
     {
       deallocate_segment(*it);
-      _map.pop_back();
     }
+    _map.erase(first_it, _map.end());
 
     BOOST_ASSERT(invariants_ok());
   }

@@ -1296,22 +1296,74 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(reserve_back, Deque, all_deques)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(shrink_to_fit, Deque, all_deques)
 {
-  Deque a;
-  a.shrink_to_fit();
-  BOOST_TEST(a.front_free_capacity() == 0u);
+  {
+    Deque a;
+    a.shrink_to_fit();
+    BOOST_TEST(a.front_free_capacity() == 0u);
 
-  a.emplace_front(1);
-  a.pop_front();
-  a.shrink_to_fit();
-  BOOST_TEST(a.front_free_capacity() == 0u);
+    a.emplace_front(1);
+    a.pop_front();
+    a.shrink_to_fit();
+    BOOST_TEST(a.front_free_capacity() == 0u);
 
-  a.emplace_front(1);
-  a.shrink_to_fit();
+    a.emplace_front(1);
+    a.shrink_to_fit();
+    test_equal_range(a, {1});
 
-  const auto min_cap = a.front_free_capacity();
-  a.reserve_front(123);
-  a.shrink_to_fit();
-  BOOST_TEST(a.front_free_capacity() == min_cap);
+    const auto min_cap = a.front_free_capacity();
+    a.reserve_front(123);
+    a.shrink_to_fit();
+    BOOST_TEST(a.front_free_capacity() == min_cap);
+    test_equal_range(a, {1});
+  }
+
+  {
+    Deque b;
+    b.shrink_to_fit();
+    BOOST_TEST(b.back_free_capacity() == 0u);
+
+    b.emplace_back(1);
+    b.pop_back();
+    b.shrink_to_fit();
+    BOOST_TEST(b.back_free_capacity() == 0u);
+
+    b.emplace_back(1);
+    b.shrink_to_fit();
+    test_equal_range(b, {1});
+
+    const auto min_cap = b.back_free_capacity();
+    b.reserve_back(123);
+    b.shrink_to_fit();
+    BOOST_TEST(b.back_free_capacity() == min_cap);
+    test_equal_range(b, {1});
+  }
+
+  {
+    Deque c;
+
+    c.emplace_back(2);
+    c.emplace_front(1);
+    c.pop_back();
+    c.pop_front();
+    c.shrink_to_fit();
+    BOOST_TEST(c.back_free_capacity() == 0u);
+
+    c.emplace_back(2);
+    c.emplace_front(1);
+    c.shrink_to_fit();
+    test_equal_range(c, {1, 2});
+
+    const auto min_front_cap = c.front_free_capacity();
+    const auto min_back_cap = c.back_free_capacity();
+    c.reserve_back(123);
+    c.reserve_front(123);
+
+    c.shrink_to_fit();
+
+    BOOST_TEST(c.front_free_capacity() == min_front_cap);
+    BOOST_TEST(c.back_free_capacity() == min_back_cap);
+    test_equal_range(c, {1, 2});
+  }
 }
 
 template <typename Deque, typename MutableDeque>
