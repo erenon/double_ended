@@ -1740,7 +1740,7 @@ void test_shrink_to_fit_never()
   BOOST_TEST(a.capacity() == 100u);
 }
 
-void test_shrink_to_fit()
+BOOST_AUTO_TEST_CASE(shrink_to_fit)
 {
   struct always_shrink : public devector_growth_policy
   {
@@ -1852,7 +1852,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_back, Devector, all_devectors)
   }
 }
 
-void test_data()
+BOOST_AUTO_TEST_CASE(data)
 {
   unsigned c_array[] = {1, 2, 3, 4};
 
