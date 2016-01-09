@@ -24,6 +24,8 @@ using namespace boost::double_ended;
 #include <boost/mpl/filter_view.hpp>
 #include <boost/mpl/is_sequence.hpp>
 #include <boost/mpl/placeholders.hpp>
+#include <boost/mpl/transform_view.hpp>
+#include <boost/mpl/joint_view.hpp>
 
 #include <boost/algorithm/cxx14/equal.hpp>
 
@@ -64,6 +66,35 @@ typedef boost::mpl::filter_view<all_deques, if_value_type<std::is_copy_construct
 
 typedef boost::mpl::filter_view<all_deques, if_value_type<std::is_trivial>>::type
   t_is_trivial;
+
+template <template<typename> class NA>
+struct rebind_allocator
+{
+  template <typename> struct apply;
+
+  template <typename T, typename P, typename A>
+  struct apply<batch_deque<T, P, A>>
+  {
+    using type = batch_deque<T, P, NA<T>>;
+  };
+};
+
+template <typename T>
+struct different_allocator : public std::allocator<T>
+{
+  bool operator==(const different_allocator&) const { return false; }
+  bool operator!=(const different_allocator&) const { return true;  }
+
+  using propagate_on_container_copy_assignment = std::true_type;
+  using propagate_on_container_move_assignment = std::false_type;
+  using propagate_on_container_swap = std::true_type;
+};
+
+template <typename Deques>
+using and_allocs = typename boost::mpl::joint_view<
+  Deques,
+  typename boost::mpl::transform_view<Deques, rebind_allocator<different_allocator>>::type
+>::type;
 
 template <typename Container>
 Container get_range(int fbeg, int fend, int bbeg, int bend)
@@ -422,6 +453,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(move_constructor, Deque, all_deques)
   }
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(move_constructor_allocator, Deque, and_allocs<all_deques>)
+{
+  using Alloc = typename Deque::allocator_type;
+
+  { // empty
+    Deque a;
+    Deque b(std::move(a), Alloc{});
+
+    BOOST_TEST(a.empty());
+    BOOST_TEST(b.empty());
+  }
+
+  {
+    Deque a = get_range<Deque>(1, 5, 5, 9);
+    Deque b(std::move(a), Alloc{});
+
+    test_equal_range(b, get_range<Deque>(1, 5, 5, 9));
+
+    // a is unspecified but valid state
+    a.clear();
+    BOOST_TEST(a.empty());
+  }
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_il, Deque, t_is_copy_constructible)
 {
   {
@@ -443,7 +498,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(destructor, Deque, all_deques)
   }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(op_copy_assign, Deque, t_is_copy_constructible)
+BOOST_AUTO_TEST_CASE_TEMPLATE(op_copy_assign, Deque, and_allocs<t_is_copy_constructible>)
 {
   // assign to empty
   {
@@ -517,7 +572,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_copy_assign, Deque, t_is_copy_constructible)
   BOOST_TEST(test_elem_base::no_living_elem());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(op_move_assign, Deque, all_deques)
+BOOST_AUTO_TEST_CASE_TEMPLATE(op_move_assign, Deque, and_allocs<all_deques>)
 {
   // assign to empty
   {
@@ -531,9 +586,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(op_move_assign, Deque, all_deques)
     BOOST_TEST(a.empty());
   }
 
-  // assign to non-empty
+  // assign smaller to larger
   {
-    Deque a = get_range<Deque>();
+    Deque a = get_range<Deque>(16);
+    Deque b = get_range<Deque>(9);
+
+    a = std::move(b);
+    b.clear();
+
+    test_equal_range(a, {1,2,3,4,5,6,7,8,9});
+    BOOST_TEST(b.empty());
+  }
+
+  // assign larger to smaller
+  {
+    Deque a = get_range<Deque>(4);
     Deque b = get_range<Deque>(9);
 
     a = std::move(b);
