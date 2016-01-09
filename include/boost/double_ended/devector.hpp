@@ -2795,26 +2795,26 @@ private:
     back_guard.release();
   }
 
-  static void swap_small_big(devector& small, devector& big)
+  static void swap_small_big(devector& smll, devector& big)
     noexcept(t_is_nothrow_constructible)
   {
-    BOOST_ASSERT(small.is_small() == true);
+    BOOST_ASSERT(smll.is_small() == true);
     BOOST_ASSERT(big.is_small() == false);
 
     // small -> big
     big.opt_move_or_copy(
-      small.begin(), small.end(),
-      big._storage.small_buffer_address() + small._front_index
+      smll.begin(), smll.end(),
+      big._storage.small_buffer_address() + smll._front_index
     );
 
-    small.destroy_elements(small.begin(), small.end());
+    smll.destroy_elements(smll.begin(), smll.end());
 
     // big -> small
-    small._buffer = big._buffer;
+    smll._buffer = big._buffer;
     big._buffer = big._storage.small_buffer_address();
 
     // big <-> small
-    std::swap(small._storage._capacity, big._storage._capacity);
+    std::swap(smll._storage._capacity, big._storage._capacity);
   }
 
   static void swap_big_big(devector& a, devector& b) noexcept
