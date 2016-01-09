@@ -11,24 +11,23 @@
 #include <iostream>
 #include <forward_list>
 
+
+#define BOOST_TEST_MODULE batch_deque
+#include <boost/test/included/unit_test.hpp>
+
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/transform_view.hpp>
+#include <boost/mpl/joint_view.hpp>
+
+#include <boost/algorithm/cxx14/equal.hpp>
+
 #define BOOST_DOUBLE_ENDED_TEST
 #include <boost/double_ended/batch_deque.hpp>
 #undef BOOST_DOUBLE_ENDED_TEST
 
 using namespace boost::double_ended;
 
-#define BOOST_TEST_MODULE batch_deque
-#include <boost/test/included/unit_test.hpp>
-
-#include <boost/mpl/list.hpp>
-#include <boost/mpl/filter_view.hpp>
-#include <boost/mpl/is_sequence.hpp>
-#include <boost/mpl/placeholders.hpp>
-#include <boost/mpl/transform_view.hpp>
-#include <boost/mpl/joint_view.hpp>
-
-#include <boost/algorithm/cxx14/equal.hpp>
-
+#include "test_util.hpp"
 #include "test_elem.hpp"
 #include "input_iterator.hpp"
 
@@ -51,21 +50,9 @@ typedef boost::mpl::list<
 > all_deques;
 #endif
 
-template <template<typename> class Predicate>
-struct if_value_type
-{
-  template <typename Container>
-  struct apply : Predicate<typename Container::value_type> {};
-};
-
-typedef boost::mpl::filter_view<all_deques, if_value_type<std::is_default_constructible>>::type
-  t_is_default_constructible;
-
-typedef boost::mpl::filter_view<all_deques, if_value_type<std::is_copy_constructible>>::type
-  t_is_copy_constructible;
-
-typedef boost::mpl::filter_view<all_deques, if_value_type<std::is_trivial>>::type
-  t_is_trivial;
+using t_is_default_constructible = if_t_is_default_constructible<all_deques>;
+using t_is_copy_constructible = if_t_is_copy_constructible<all_deques>;
+using t_is_trivial = if_t_is_trivial<all_deques>;
 
 template <template<typename> class NA>
 struct rebind_allocator
@@ -79,124 +66,11 @@ struct rebind_allocator
   };
 };
 
-template <typename T>
-struct different_allocator : public std::allocator<T>
-{
-  bool operator==(const different_allocator&) const { return false; }
-  bool operator!=(const different_allocator&) const { return true;  }
-
-  using propagate_on_container_copy_assignment = std::true_type;
-  using propagate_on_container_move_assignment = std::false_type;
-  using propagate_on_container_swap = std::true_type;
-};
-
 template <typename Deques>
 using and_allocs = typename boost::mpl::joint_view<
   Deques,
   typename boost::mpl::transform_view<Deques, rebind_allocator<different_allocator>>::type
 >::type;
-
-template <typename Container>
-Container get_range(int fbeg, int fend, int bbeg, int bend)
-{
-  Container c;
-
-  for (int i = fend; i > fbeg ;)
-  {
-    c.emplace_front(--i);
-  }
-
-  for (int i = bbeg; i < bend; ++i)
-  {
-    c.emplace_back(i);
-  }
-
-  return c;
-}
-
-template <typename Container>
-Container get_range(int count)
-{
-  Container c;
-
-  for (int i = 1; i <= count; ++i)
-  {
-    c.emplace_back(i);
-  }
-
-  return c;
-}
-
-template <typename Container>
-Container get_range()
-{
-  return get_range<Container>(1, 13, 13, 25);
-}
-
-template <typename T, typename P, typename A, typename C2>
-bool operator==(const batch_deque<T, P, A>& a, const C2& b)
-{
-  return std::lexicographical_compare(
-    a.begin(), a.end(),
-    b.begin(), b.end()
-  );
-}
-
-template <typename Range>
-void print_range(std::ostream& out, const Range& range)
-{
-  out << '[';
-  bool first = true;
-  for (auto&& elem : range)
-  {
-    if (first) { first = false; }
-    else { out << ','; }
-
-    out << elem;
-  }
-  out << ']';
-}
-
-template <typename T, typename P, typename A>
-std::ostream& operator<<(std::ostream& out, const batch_deque<T, P, A>& deque)
-{
-  print_range(out, deque);
-  return out;
-}
-
-template <typename C1, typename C2>
-void test_equal_range(const C1& a, const C2&b)
-{
-  bool equals = boost::algorithm::equal(
-    a.begin(), a.end(),
-    b.begin(), b.end()
-  );
-
-  BOOST_TEST(equals);
-
-  if (!equals)
-  {
-    print_range(std::cerr, a);
-    std::cerr << "\n";
-    print_range(std::cerr, b);
-    std::cerr << "\n";
-  }
-}
-
-// support initializer_list
-template <typename C>
-void test_equal_range(const C& a, std::initializer_list<unsigned> il)
-{
-  typedef typename C::value_type T;
-  std::vector<T> b;
-
-  for (auto&& elem : il)
-  {
-    b.emplace_back(elem);
-  }
-
-  test_equal_range(a, b);
-}
 
 // END HELPERS
 

@@ -14,37 +14,25 @@
 #include <limits>
 #include <forward_list>
 
+#define BOOST_TEST_MODULE devector
+#include <boost/test/included/unit_test.hpp>
+
+#include <boost/mpl/list.hpp>
+
+#include <boost/algorithm/cxx14/equal.hpp>
+
 #define BOOST_DOUBLE_ENDED_DEVECTOR_ALLOC_STATS
 #include <boost/double_ended/devector.hpp>
 #undef BOOST_DOUBLE_ENDED_DEVECTOR_ALLOC_STATS
 
-#include <boost/algorithm/cxx14/equal.hpp>
-
+#include "test_util.hpp"
 #include "test_elem.hpp"
 #include "input_iterator.hpp"
 
 using namespace boost::double_ended;
 
-#define BOOST_TEST_MODULE devector
-#include <boost/test/included/unit_test.hpp>
-
-#include <boost/mpl/list.hpp>
-#include <boost/mpl/filter_view.hpp>
-#include <boost/mpl/is_sequence.hpp>
-#include <boost/mpl/placeholders.hpp>
-
 template <typename T>
 using small_devector = devector<T, devector_small_buffer_policy<16>>;
-
-template <typename T>
-struct different_allocator : public std::allocator<T>
-{
-  bool operator==(const different_allocator&) const { return false; }
-
-  using propagate_on_container_copy_assignment = std::true_type;
-  using propagate_on_container_move_assignment = std::false_type;
-  using propagate_on_container_swap = std::true_type;
-};
 
 template <typename SizeType>
 struct different_growth_policy
@@ -89,105 +77,8 @@ typedef boost::mpl::list<
 > all_devectors;
 #endif
 
-template <template<typename> class Predicate>
-struct if_value_type
-{
-  template <typename Container>
-  struct apply : Predicate<typename Container::value_type> {};
-};
-
-typedef boost::mpl::filter_view<all_devectors, if_value_type<std::is_default_constructible>>::type
-  t_is_default_constructible;
-
-typedef boost::mpl::filter_view<all_devectors, if_value_type<std::is_copy_constructible>>::type
-  t_is_copy_constructible;
-
-template <typename Container>
-Container get_range(int count)
-{
-  Container c;
-  c.reserve(count);
-
-  for (int i = 1; i <= count; ++i)
-  {
-    c.emplace_back(i);
-  }
-
-  return c;
-}
-
-template <typename Devector>
-Devector get_range(int fbeg, int fend, int bbeg, int bend)
-{
-  Devector c(fend - fbeg, bend - bbeg, reserve_only_tag{});
-
-  for (int i = fend; i > fbeg ;)
-  {
-    c.emplace_front(--i);
-  }
-
-  for (int i = bbeg; i < bend; ++i)
-  {
-    c.emplace_back(i);
-  }
-
-  return c;
-}
-
-template <typename Range>
-void print_range(std::ostream& out, const Range& range)
-{
-  out << '[';
-  bool first = true;
-  for (auto&& elem : range)
-  {
-    if (first) { first = false; }
-    else { out << ','; }
-
-    out << elem;
-  }
-  out << ']';
-}
-
-template <class T, class SBP, class GP, class A>
-std::ostream& operator<<(std::ostream& out, const devector<T, SBP, GP, A>& devec)
-{
-  print_range(out, devec);
-  return out;
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::vector<T>& vec)
-{
-  print_range(out, vec);
-  return out;
-}
-
-template <typename Devector>
-void assert_equals(const Devector& actual, const std::vector<typename Devector::value_type>& expected)
-{
-  bool equals = boost::algorithm::equal(actual.begin(), actual.end(), expected.begin(), expected.end());
-
-  if (!equals)
-  {
-    std::cerr << actual << " != " << expected << " (actual != expected)" << std::endl;
-
-    BOOST_TEST(false);
-  }
-}
-
-template <typename Devector>
-void assert_equals(const Devector& actual, std::initializer_list<unsigned> inits)
-{
-  using T = typename Devector::value_type;
-  std::vector<T> expected;
-  for (unsigned init : inits)
-  {
-    expected.push_back(T(init));
-  }
-
-  assert_equals(actual, expected);
-}
+using t_is_default_constructible = if_t_is_default_constructible<all_devectors>;
+using t_is_copy_constructible = if_t_is_copy_constructible<all_devectors>;
 
 template <typename>
 struct small_buffer_size;
@@ -251,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_reserve_only_front_back, Devector
       a.emplace_back(i);
     }
 
-    assert_equals(a, {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
+    test_equal_range(a, {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
     BOOST_TEST(a.capacity_alloc_count <= 1u);
   }
 
@@ -274,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_unsafe_uninitialized, Devector, a
       new (a.data() + i) T(i+1);
     }
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 
   {
@@ -290,13 +181,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_n, Devector, t_is_default_constru
   {
     Devector a(8);
 
-    assert_equals(a, {0, 0, 0, 0, 0, 0, 0, 0});
+    test_equal_range(a, {0, 0, 0, 0, 0, 0, 0, 0});
   }
 
   {
     Devector b(0);
 
-    assert_equals(b, {});
+    test_equal_range(b, {});
     BOOST_TEST(b.capacity_alloc_count == 0u);
   }
 
@@ -318,14 +209,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_n_copy, Devector, t_is_copy_const
     const T x(9);
     Devector a(8, x);
 
-    assert_equals(a, {9, 9, 9, 9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9, 9, 9, 9});
   }
 
   {
     const T x(9);
     Devector b(0, x);
 
-    assert_equals(b, {});
+    test_equal_range(b, {});
     BOOST_TEST(b.capacity_alloc_count == 0u);
   }
 
@@ -361,7 +252,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_input_range, Devector, t_is_copy_
 
     Devector b(input_begin, input_begin);
 
-    assert_equals(b, {});
+    test_equal_range(b, {});
     BOOST_TEST(b.capacity_alloc_count == 0u);
   }
 
@@ -391,14 +282,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_forward_range, Devector, t_is_cop
   {
     Devector a(x.begin(), x.end());
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(a.capacity_alloc_count <= 1u);
   }
 
   {
     Devector b(x.begin(), x.begin());
 
-    assert_equals(b, {});
+    test_equal_range(b, {});
     BOOST_TEST(b.capacity_alloc_count == 0u);
   }
 
@@ -421,14 +312,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_pointer_range, Devector, t_is_cop
   {
     Devector a(xbeg, xend);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(a.capacity_alloc_count <= 1u);
   }
 
   {
     Devector b(xbeg, xbeg);
 
-    assert_equals(b, {});
+    test_equal_range(b, {});
     BOOST_TEST(b.capacity_alloc_count == 0u);
   }
 
@@ -448,7 +339,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_copy_constructor, Devector, t_is_copy_constru
     Devector a;
     Devector b(a);
 
-    assert_equals(b, {});
+    test_equal_range(b, {});
     BOOST_TEST(b.capacity_alloc_count == 0u);
   }
 
@@ -456,7 +347,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_copy_constructor, Devector, t_is_copy_constru
     Devector a = get_range<Devector>(8);
     Devector b(a);
 
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(b.capacity_alloc_count <= 1u);
   }
 
@@ -486,7 +377,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_move_constructor, Devector, all_devectors)
     Devector a = get_range<Devector>(1, 5, 5, 9);
     Devector b(std::move(a));
 
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
 
     // a is unspecified but valid state
     a.clear();
@@ -498,7 +389,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_move_constructor, Devector, all_devectors)
     Devector b(std::move(a));
 
     std::vector<T> exp = get_range<std::vector<T>>(32);
-    assert_equals(b, exp);
+    test_equal_range(b, exp);
 
     // a is unspecified but valid state
     a.clear();
@@ -523,7 +414,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     a = b;
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign from empty
@@ -532,7 +423,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     a = b;
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -541,7 +432,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     a = b;
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign to free front
@@ -553,7 +444,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     a = b;
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -566,7 +457,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     a = b;
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -580,7 +471,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     a = b;
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -594,7 +485,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
 
     BOOST_CHECK_THROW(a = b, test_exception);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -608,11 +499,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_move_assignment, Devector, all_devectors)
 
     a = std::move(b);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
 
     // b is in unspecified but valid state
     b.clear();
-    assert_equals(b, {});
+    test_equal_range(b, {});
   }
 
   { // assign from empty
@@ -621,8 +512,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_move_assignment, Devector, all_devectors)
 
     a = std::move(b);
 
-    assert_equals(a, {});
-    assert_equals(b, {});
+    test_equal_range(a, {});
+    test_equal_range(b, {});
   }
 
   { // assign to non-empty
@@ -631,10 +522,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_move_assignment, Devector, all_devectors)
 
     a = std::move(b);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
 
     b.clear();
-    assert_equals(b, {});
+    test_equal_range(b, {});
   }
 
   // move should be used on the slow path
@@ -649,10 +540,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_move_assignment, Devector, all_devectors)
 
     test_elem_throw::do_not_throw();
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
 
     b.clear();
-    assert_equals(b, {});
+    test_equal_range(b, {});
   }
 }
 
@@ -665,7 +556,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
 
     a = {1, 2, 3, 4, 5, 6};
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign from empty
@@ -673,7 +564,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
 
     a = {};
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -681,7 +572,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
 
     a = {1, 2, 3, 4, 5, 6};
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign to free front
@@ -691,7 +582,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
 
     a = {1, 2, 3, 4, 5, 6};
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -702,7 +593,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
 
     a = {1, 2, 3, 4, 5, 6};
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -714,7 +605,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
 
     a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -731,7 +622,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_il_assignment, Devector, t_is_copy_constructi
       BOOST_TEST(false);
     } catch(const test_exception&) {}
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -764,7 +655,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
 
     a.assign(input_begin, input_end);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign from empty
@@ -774,7 +665,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
     Devector a = get_range<Devector>(6);
     a.assign(input_begin, input_begin);
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -785,7 +676,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
     Devector a = get_range<Devector>(11, 15, 15, 19);
     a.assign(input_begin, input_end);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign to free front
@@ -799,7 +690,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
 
     a.assign(input_begin, input_end);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -814,7 +705,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
 
     a.assign(input_begin, input_end);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -830,7 +721,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
 
     a.assign(input_begin, input_end);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -848,7 +739,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
 
     BOOST_CHECK_THROW(a.assign(input_begin, input_end), test_exception);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -869,7 +760,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign from empty
@@ -877,7 +768,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     a.assign(one, one);
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -885,7 +776,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign to free front
@@ -895,7 +786,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -906,7 +797,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -918,7 +809,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     a.assign(one, twelve);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -931,7 +822,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_forward_range, Devector, t_is_copy_con
 
     BOOST_CHECK_THROW(a.assign(one, twelve), test_exception);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -949,7 +840,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign from empty
@@ -957,7 +848,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     a.assign(one, one);
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -965,7 +856,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign to free front
@@ -975,7 +866,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -986,7 +877,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     a.assign(one, six);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -998,7 +889,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     a.assign(one, twelve);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1011,7 +902,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_pointer_range, Devector, t_is_copy_con
 
     BOOST_CHECK_THROW(a.assign(one, twelve), test_exception);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -1024,7 +915,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     a.assign(6, T(9));
 
-    assert_equals(a, {9, 9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9, 9});
   }
 
   { // assign from empty
@@ -1032,7 +923,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     a.assign(0, T(404));
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -1040,7 +931,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     a.assign(6, T(9));
 
-    assert_equals(a, {9, 9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9, 9});
   }
 
   { // assign to free front
@@ -1050,7 +941,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     a.assign(6, T(9));
 
-    assert_equals(a, {9, 9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9, 9});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1061,7 +952,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     a.assign(6, T(9));
 
-    assert_equals(a, {9, 9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9, 9});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1073,7 +964,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     a.assign(12, T(9));
 
-    assert_equals(a, {9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1086,7 +977,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_n, Devector, t_is_copy_constructible)
 
     BOOST_CHECK_THROW(a.assign(32, T(9)), test_exception);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -1099,7 +990,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     a.assign({1, 2, 3, 4, 5, 6});
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign from empty
@@ -1107,7 +998,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     a.assign({});
 
-    assert_equals(a, {});
+    test_equal_range(a, {});
   }
 
   { // assign to non-empty
@@ -1115,7 +1006,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     a.assign({1, 2, 3, 4, 5, 6});
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   { // assign to free front
@@ -1125,7 +1016,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     a.assign({1, 2, 3, 4, 5, 6});
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1136,7 +1027,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     a.assign({1, 2, 3, 4, 5, 6});
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1148,7 +1039,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     a.assign({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1161,7 +1052,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_il, Devector, t_is_copy_constructible)
 
     BOOST_CHECK_THROW(a.assign({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}), test_exception);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -1275,7 +1166,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
   {
     Devector a = get_range<Devector>(5);
     a.resize_front(8);
-    assert_equals(a, {0, 0, 0, 1, 2, 3, 4, 5});
+    test_equal_range(a, {0, 0, 0, 1, 2, 3, 4, 5});
   }
 
   // size < required, but capacity provided
@@ -1283,7 +1174,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
     Devector b = get_range<Devector>(5);
     b.reserve_front(16);
     b.resize_front(8);
-    assert_equals(b, {0, 0, 0, 1, 2, 3, 4, 5});
+    test_equal_range(b, {0, 0, 0, 1, 2, 3, 4, 5});
   }
 
   // size < required, move would throw
@@ -1295,7 +1186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
     c.resize_front(8); // shouldn't use the throwing move
 
     test_elem_throw::do_not_throw();
-    assert_equals(c, {0, 0, 0, 1, 2, 3, 4, 5});
+    test_equal_range(c, {0, 0, 0, 1, 2, 3, 4, 5});
   }
 
   // size < required, constructor throws
@@ -1308,7 +1199,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
 
     BOOST_CHECK_THROW(d.resize_front(256), test_exception);
 
-    assert_equals(d, d_origi);
+    test_equal_range(d, d_origi);
     BOOST_TEST(origi_begin == d.begin());
   }
 
@@ -1316,7 +1207,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
   {
     Devector e = get_range<Devector>(6);
     e.resize_front(4);
-    assert_equals(e, {3, 4, 5, 6});
+    test_equal_range(e, {3, 4, 5, 6});
   }
 
   // size < required, does not fit front small buffer
@@ -1324,14 +1215,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front, Devector, t_is_default_construc
     std::vector<T> expected(128);
     Devector g;
     g.resize_front(128);
-    assert_equals(g, expected);
+    test_equal_range(g, expected);
   }
 
   // size = required
   {
     Devector e = get_range<Devector>(6);
     e.resize_front(6);
-    assert_equals(e, {1, 2, 3, 4, 5, 6});
+    test_equal_range(e, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -1343,7 +1234,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
   {
     Devector a = get_range<Devector>(5);
     a.resize_front(8, T(9));
-    assert_equals(a, {9, 9, 9, 1, 2, 3, 4, 5});
+    test_equal_range(a, {9, 9, 9, 1, 2, 3, 4, 5});
   }
 
   // size < required, but capacity provided
@@ -1351,7 +1242,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
     Devector b = get_range<Devector>(5);
     b.reserve_front(16);
     b.resize_front(8, T(9));
-    assert_equals(b, {9, 9, 9, 1, 2, 3, 4, 5});
+    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5});
   }
 
   // size < required, copy throws
@@ -1363,7 +1254,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
 
     BOOST_CHECK_THROW(c.resize_front(256, T(404)), test_exception);
 
-    assert_equals(c, c_origi);
+    test_equal_range(c, c_origi);
   }
 
   // size < required, copy throws, but later
@@ -1376,7 +1267,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
 
     BOOST_CHECK_THROW(c.resize_front(256, T(404)), test_exception);
 
-    assert_equals(c, c_origi);
+    test_equal_range(c, c_origi);
     BOOST_TEST(origi_begin == c.begin());
   }
 
@@ -1384,7 +1275,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
   {
     Devector e = get_range<Devector>(6);
     e.resize_front(4, T(404));
-    assert_equals(e, {3, 4, 5, 6});
+    test_equal_range(e, {3, 4, 5, 6});
   }
 
   // size < required, does not fit front small buffer
@@ -1392,14 +1283,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
     std::vector<T> expected(128, T(9));
     Devector g;
     g.resize_front(128, T(9));
-    assert_equals(g, expected);
+    test_equal_range(g, expected);
   }
 
   // size = required
   {
     Devector e = get_range<Devector>(6);
     e.resize_front(6, T(9));
-    assert_equals(e, {1, 2, 3, 4, 5, 6});
+    test_equal_range(e, {1, 2, 3, 4, 5, 6});
   }
 
   // size < required, tmp is already inserted
@@ -1407,7 +1298,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_front_copy, Devector, t_is_copy_constr
     Devector f = get_range<Devector>(8);
     const T& tmp = *(f.begin() + 1);
     f.resize_front(16, tmp);
-    assert_equals(f, {2,2,2,2,2,2,2,2,1,2,3,4,5,6,7,8});
+    test_equal_range(f, {2,2,2,2,2,2,2,2,1,2,3,4,5,6,7,8});
   }
 }
 
@@ -1419,7 +1310,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
   {
     Devector a = get_range<Devector>(5);
     a.resize_back(8);
-    assert_equals(a, {1, 2, 3, 4, 5, 0, 0, 0});
+    test_equal_range(a, {1, 2, 3, 4, 5, 0, 0, 0});
   }
 
   // size < required, but capacity provided
@@ -1427,7 +1318,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
     Devector b = get_range<Devector>(5);
     b.reserve_back(16);
     b.resize_back(8);
-    assert_equals(b, {1, 2, 3, 4, 5, 0, 0, 0});
+    test_equal_range(b, {1, 2, 3, 4, 5, 0, 0, 0});
   }
 
   // size < required, move would throw
@@ -1439,7 +1330,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
     c.resize_back(8); // shouldn't use the throwing move
 
     test_elem_throw::do_not_throw();
-    assert_equals(c, {1, 2, 3, 4, 5, 0, 0, 0});
+    test_equal_range(c, {1, 2, 3, 4, 5, 0, 0, 0});
   }
 
   // size < required, constructor throws
@@ -1452,7 +1343,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
 
     BOOST_CHECK_THROW(d.resize_back(256), test_exception);
 
-    assert_equals(d, d_origi);
+    test_equal_range(d, d_origi);
     BOOST_TEST(origi_begin == d.begin());
   }
 
@@ -1460,7 +1351,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
   {
     Devector e = get_range<Devector>(6);
     e.resize_back(4);
-    assert_equals(e, {1, 2, 3, 4});
+    test_equal_range(e, {1, 2, 3, 4});
   }
 
   // size < required, does not fit front small buffer
@@ -1468,14 +1359,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back, Devector, t_is_default_construct
     std::vector<T> expected(128);
     Devector g;
     g.resize_back(128);
-    assert_equals(g, expected);
+    test_equal_range(g, expected);
   }
 
   // size = required
   {
     Devector e = get_range<Devector>(6);
     e.resize_back(6);
-    assert_equals(e, {1, 2, 3, 4, 5, 6});
+    test_equal_range(e, {1, 2, 3, 4, 5, 6});
   }
 }
 
@@ -1487,7 +1378,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
   {
     Devector a = get_range<Devector>(5);
     a.resize_back(8, T(9));
-    assert_equals(a, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(a, {1, 2, 3, 4, 5, 9, 9, 9});
   }
 
   // size < required, but capacity provided
@@ -1495,7 +1386,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
     Devector b = get_range<Devector>(5);
     b.reserve_back(16);
     b.resize_back(8, T(9));
-    assert_equals(b, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(b, {1, 2, 3, 4, 5, 9, 9, 9});
   }
 
   // size < required, copy throws
@@ -1507,7 +1398,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
 
     BOOST_CHECK_THROW(c.resize_back(256, T(404)), test_exception);
 
-    assert_equals(c, c_origi);
+    test_equal_range(c, c_origi);
   }
 
   // size < required, copy throws, but later
@@ -1520,7 +1411,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
 
     BOOST_CHECK_THROW(c.resize_back(256, T(404)), test_exception);
 
-    assert_equals(c, c_origi);
+    test_equal_range(c, c_origi);
     BOOST_TEST(origi_begin == c.begin());
   }
 
@@ -1534,7 +1425,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
 
     BOOST_CHECK_THROW(c.resize_back(256, T(404)), test_exception);
 
-    assert_equals(c, c_origi);
+    test_equal_range(c, c_origi);
     BOOST_TEST(origi_begin == c.begin());
   }
 
@@ -1542,7 +1433,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
   {
     Devector e = get_range<Devector>(6);
     e.resize_back(4, T(404));
-    assert_equals(e, {1, 2, 3, 4});
+    test_equal_range(e, {1, 2, 3, 4});
   }
 
   // size < required, does not fit front small buffer
@@ -1550,14 +1441,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
     std::vector<T> expected(128, T(9));
     Devector g;
     g.resize_back(128, T(9));
-    assert_equals(g, expected);
+    test_equal_range(g, expected);
   }
 
   // size = required
   {
     Devector e = get_range<Devector>(6);
     e.resize_back(6, T(9));
-    assert_equals(e, {1, 2, 3, 4, 5, 6});
+    test_equal_range(e, {1, 2, 3, 4, 5, 6});
   }
 
   // size < required, tmp is already inserted
@@ -1565,7 +1456,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_resize_back_copy, Devector, t_is_copy_constru
     Devector f = get_range<Devector>(8);
     const T& tmp = *(f.begin() + 1);
     f.resize_back(16, tmp);
-    assert_equals(f, {1,2,3,4,5,6,7,8,2,2,2,2,2,2,2,2});
+    test_equal_range(f, {1,2,3,4,5,6,7,8,2,2,2,2,2,2,2,2});
   }
 }
 
@@ -1579,7 +1470,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_front, Devector, 
 
     a.unsafe_uninitialized_resize_front(a.size());
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1593,7 +1484,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_front, Devector, 
       new (b.data() + i) T(i+1);
     }
 
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 
   { // shrink uninitialized
@@ -1602,7 +1493,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_front, Devector, 
     c.unsafe_uninitialized_resize_front(16);
     c.unsafe_uninitialized_resize_front(8);
 
-    assert_equals(c, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 
   if (std::is_trivially_destructible<T>::value)
@@ -1612,7 +1503,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_front, Devector, 
 
     d.unsafe_uninitialized_resize_front(4);
 
-    assert_equals(d, {5, 6, 7, 8});
+    test_equal_range(d, {5, 6, 7, 8});
   }
 }
 
@@ -1626,7 +1517,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_back, Devector, a
 
     a.unsafe_uninitialized_resize_back(a.size());
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(a.capacity_alloc_count == 0u);
   }
 
@@ -1640,7 +1531,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_back, Devector, a
       new (b.data() + 4 + i) T(i+5);
     }
 
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 
   { // shrink uninitialized
@@ -1649,7 +1540,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_back, Devector, a
     c.unsafe_uninitialized_resize_back(16);
     c.unsafe_uninitialized_resize_back(8);
 
-    assert_equals(c, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 
   if (std::is_trivially_destructible<T>::value)
@@ -1659,7 +1550,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_uninitialized_resize_back, Devector, a
 
     d.unsafe_uninitialized_resize_back(4);
 
-    assert_equals(d, {1, 2, 3, 4});
+    test_equal_range(d, {1, 2, 3, 4});
   }
 }
 
@@ -1716,7 +1607,7 @@ void test_shrink_to_fit_always()
   a.shrink_to_fit();
 
   std::vector<unsigned> expected{1, 2, 3};
-  assert_equals(a, expected);
+  test_equal_range(a, expected);
 
   auto sb_size = small_buffer_size<Devector>::value;
   auto exp_capacity = (std::max)(sb_size, 3u);
@@ -1736,7 +1627,7 @@ void test_shrink_to_fit_never()
   a.shrink_to_fit();
 
   std::vector<unsigned> expected{1, 2, 3};
-  assert_equals(a, expected);
+  test_equal_range(a, expected);
   BOOST_TEST(a.capacity() == 100u);
 }
 
@@ -1887,7 +1778,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace_front, Devector, all_devectors)
 
     std::vector<T> expected = get_range<std::vector<T>>(3);
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_constructible<T>::value)
@@ -1921,7 +1812,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_front, Devector, t_is_copy_constructible
       a.push_front(elem);
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_copy_constructible<T>::value)
@@ -1945,7 +1836,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_front, Devector, t_is_copy_constructible
     Devector c = get_range<Devector>(4);
     const T& tmp = *(c.begin() + 1);
     c.push_front(tmp);
-    assert_equals(c, {2, 1, 2, 3, 4});
+    test_equal_range(c, {2, 1, 2, 3, 4});
   }
 }
 
@@ -1964,7 +1855,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_front_rvalue, Devector, all_devectors)
       a.push_front(std::move(elem));
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_move_constructible<T>::value)
@@ -1999,7 +1890,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_push_front, Devector, t_is_copy_constr
       a.unsafe_push_front(elem);
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_copy_constructible<T>::value)
@@ -2036,7 +1927,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_push_front_rvalue, Devector, all_devec
       a.unsafe_push_front(std::move(elem));
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 }
 
@@ -2085,7 +1976,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace_back, Devector, all_devectors)
 
     std::vector<T> expected = get_range<std::vector<T>>(3);
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_constructible<T>::value)
@@ -2118,7 +2009,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_back, Devector, t_is_copy_constructible)
       a.push_back(elem);
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_copy_constructible<T>::value)
@@ -2142,7 +2033,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_back, Devector, t_is_copy_constructible)
     Devector c = get_range<Devector>(4);
     const T& tmp = *(c.begin() + 1);
     c.push_back(tmp);
-    assert_equals(c, {1, 2, 3, 4, 2});
+    test_equal_range(c, {1, 2, 3, 4, 2});
   }
 }
 
@@ -2160,7 +2051,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_push_back_rvalue, Devector, all_devectors)
       a.push_back(std::move(elem));
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_move_constructible<T>::value)
@@ -2194,7 +2085,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_push_back, Devector, t_is_copy_constru
       a.unsafe_push_back(elem);
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 
   if (! std::is_nothrow_copy_constructible<T>::value)
@@ -2230,7 +2121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_unsafe_push_back_rvalue, Devector, all_devect
       a.unsafe_push_back(std::move(elem));
     }
 
-    assert_equals(a, expected);
+    test_equal_range(a, expected);
   }
 }
 
@@ -2273,14 +2164,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
   {
     Devector a = get_range<Devector>(16);
     auto it = a.emplace(a.begin(), 123);
-    assert_equals(a, {123, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(a, {123, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
   {
     Devector b = get_range<Devector>(16);
     auto it = b.emplace(b.end(), 123);
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 123});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 123});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2288,7 +2179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     Devector c = get_range<Devector>(16);
     c.pop_front();
     auto it = c.emplace(c.begin(), 123);
-    assert_equals(c, {123, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(c, {123, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2296,14 +2187,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     Devector d = get_range<Devector>(16);
     d.pop_back();
     auto it = d.emplace(d.end(), 123);
-    assert_equals(d, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 123});
+    test_equal_range(d, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 123});
     BOOST_TEST(*it == T(123));
   }
 
   {
     Devector e = get_range<Devector>(16);
     auto it = e.emplace(e.begin() + 5, 123);
-    assert_equals(e, {1, 2, 3, 4, 5, 123, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(e, {1, 2, 3, 4, 5, 123, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2313,7 +2204,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     f.pop_back();
     auto valid = f.begin() + 1;
     auto it = f.emplace(f.begin() + 1, 123);
-    assert_equals(f, {2, 123, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    test_equal_range(f, {2, 123, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(3));
   }
@@ -2324,7 +2215,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     g.pop_back();
     auto valid = g.end() - 2;
     auto it = g.emplace(g.end() - 1, 123);
-    assert_equals(g, {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 123, 15});
+    test_equal_range(g, {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 123, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(14));
   }
@@ -2335,7 +2226,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     h.pop_back();
     auto valid = h.begin() + 7;
     auto it = h.emplace(h.begin() + 7, 123);
-    assert_equals(h, {2, 3, 4, 5, 6, 7, 8, 123, 9, 10, 11, 12, 13, 14, 15});
+    test_equal_range(h, {2, 3, 4, 5, 6, 7, 8, 123, 9, 10, 11, 12, 13, 14, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(9));
   }
@@ -2348,7 +2239,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
     {
       i.emplace(i.begin() + (j-1), j);
     }
-    assert_equals(i, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    test_equal_range(i, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
 
   if (! std::is_nothrow_constructible<T>::value)
@@ -2360,7 +2251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
 
     BOOST_CHECK_THROW(j.emplace(j.begin() + 2, 404), test_exception);
 
-    assert_equals(j, {1, 2, 3, 4});
+    test_equal_range(j, {1, 2, 3, 4});
     BOOST_TEST(origi_begin == j.begin());
   }
 
@@ -2382,7 +2273,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_emplace, Devector, all_devectors)
 //
 //    test_elem_throw::do_not_throw();
 //
-//    assert_equals(k, {1, 2, 3, 4, 5, 6, 7, 8});
+//    test_equal_range(k, {1, 2, 3, 4, 5, 6, 7, 8});
 //    BOOST_TEST(origi_begin == k.begin());
 //  }
 }
@@ -2396,14 +2287,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
   {
     Devector a = get_range<Devector>(16);
     auto it = a.insert(a.begin(), test_elem);
-    assert_equals(a, {123, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(a, {123, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
   {
     Devector b = get_range<Devector>(16);
     auto it = b.insert(b.end(), test_elem);
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 123});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 123});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2411,7 +2302,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     Devector c = get_range<Devector>(16);
     c.pop_front();
     auto it = c.insert(c.begin(), test_elem);
-    assert_equals(c, {123, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(c, {123, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2419,14 +2310,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     Devector d = get_range<Devector>(16);
     d.pop_back();
     auto it = d.insert(d.end(), test_elem);
-    assert_equals(d, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 123});
+    test_equal_range(d, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 123});
     BOOST_TEST(*it == T(123));
   }
 
   {
     Devector e = get_range<Devector>(16);
     auto it = e.insert(e.begin() + 5, test_elem);
-    assert_equals(e, {1, 2, 3, 4, 5, 123, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(e, {1, 2, 3, 4, 5, 123, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2436,7 +2327,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     f.pop_back();
     auto valid = f.begin() + 1;
     auto it = f.insert(f.begin() + 1, test_elem);
-    assert_equals(f, {2, 123, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    test_equal_range(f, {2, 123, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(3));
   }
@@ -2447,7 +2338,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     g.pop_back();
     auto valid = g.end() - 2;
     auto it = g.insert(g.end() - 1, test_elem);
-    assert_equals(g, {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 123, 15});
+    test_equal_range(g, {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 123, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(14));
   }
@@ -2458,7 +2349,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     h.pop_back();
     auto valid = h.begin() + 7;
     auto it = h.insert(h.begin() + 7, test_elem);
-    assert_equals(h, {2, 3, 4, 5, 6, 7, 8, 123, 9, 10, 11, 12, 13, 14, 15});
+    test_equal_range(h, {2, 3, 4, 5, 6, 7, 8, 123, 9, 10, 11, 12, 13, 14, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(9));
   }
@@ -2472,7 +2363,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
       T x(j);
       i.insert(i.begin() + (j-1), x);
     }
-    assert_equals(i, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    test_equal_range(i, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
 
   if (! std::is_nothrow_copy_constructible<T>::value)
@@ -2484,7 +2375,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
 
     BOOST_CHECK_THROW(j.insert(j.begin() + 2, test_elem), test_exception);
 
-    assert_equals(j, {1, 2, 3, 4});
+    test_equal_range(j, {1, 2, 3, 4});
     BOOST_TEST(origi_begin == j.begin());
   }
 
@@ -2494,7 +2385,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     c.pop_back();
     const T& tmp = *(c.begin() + 2);
     c.insert(c.begin() + 1, tmp);
-    assert_equals(c, {1, 3, 2, 3, 4, 5});
+    test_equal_range(c, {1, 3, 2, 3, 4, 5});
   }
 
   // test when tmp is already inserted and maybe there's no free capacity
@@ -2502,7 +2393,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert, Devector, t_is_copy_constructible)
     Devector c = get_range<Devector>(6);
     const T& tmp = *(c.begin() + 2);
     c.insert(c.begin() + 1, tmp);
-    assert_equals(c, {1, 3, 2, 3, 4, 5, 6});
+    test_equal_range(c, {1, 3, 2, 3, 4, 5, 6});
   }
 }
 
@@ -2513,14 +2404,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
   {
     Devector a = get_range<Devector>(16);
     auto it = a.insert(a.begin(), 123);
-    assert_equals(a, {123, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(a, {123, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
   {
     Devector b = get_range<Devector>(16);
     auto it = b.insert(b.end(), 123);
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 123});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 123});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2528,7 +2419,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     Devector c = get_range<Devector>(16);
     c.pop_front();
     auto it = c.insert(c.begin(), 123);
-    assert_equals(c, {123, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(c, {123, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2536,14 +2427,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     Devector d = get_range<Devector>(16);
     d.pop_back();
     auto it = d.insert(d.end(), 123);
-    assert_equals(d, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 123});
+    test_equal_range(d, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 123});
     BOOST_TEST(*it == T(123));
   }
 
   {
     Devector e = get_range<Devector>(16);
     auto it = e.insert(e.begin() + 5, 123);
-    assert_equals(e, {1, 2, 3, 4, 5, 123, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(e, {1, 2, 3, 4, 5, 123, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     BOOST_TEST(*it == T(123));
   }
 
@@ -2553,7 +2444,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     f.pop_back();
     auto valid = f.begin() + 1;
     auto it = f.insert(f.begin() + 1, 123);
-    assert_equals(f, {2, 123, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    test_equal_range(f, {2, 123, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(3));
   }
@@ -2564,7 +2455,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     g.pop_back();
     auto valid = g.end() - 2;
     auto it = g.insert(g.end() - 1, 123);
-    assert_equals(g, {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 123, 15});
+    test_equal_range(g, {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 123, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(14));
   }
@@ -2575,7 +2466,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     h.pop_back();
     auto valid = h.begin() + 7;
     auto it = h.insert(h.begin() + 7, 123);
-    assert_equals(h, {2, 3, 4, 5, 6, 7, 8, 123, 9, 10, 11, 12, 13, 14, 15});
+    test_equal_range(h, {2, 3, 4, 5, 6, 7, 8, 123, 9, 10, 11, 12, 13, 14, 15});
     BOOST_TEST(*it == T(123));
     BOOST_TEST(*valid == T(9));
   }
@@ -2588,7 +2479,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
     {
       i.insert(i.begin() + (j-1), j);
     }
-    assert_equals(i, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    test_equal_range(i, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
 
   if (! std::is_nothrow_constructible<T>::value)
@@ -2600,7 +2491,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_rvalue, Devector, all_devectors)
 
     BOOST_CHECK_THROW(j.insert(j.begin() + 2, 404), test_exception);
 
-    assert_equals(j, {1, 2, 3, 4});
+    test_equal_range(j, {1, 2, 3, 4});
     BOOST_TEST(origi_begin == j.begin());
   }
 }
@@ -2613,7 +2504,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     Devector a;
     const T x(123);
     auto ret = a.insert(a.end(), 5, x);
-    assert_equals(a, {123, 123, 123, 123, 123});
+    test_equal_range(a, {123, 123, 123, 123, 123});
     BOOST_TEST(ret == a.begin());
   }
 
@@ -2621,7 +2512,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     Devector b = get_range<Devector>(8);
     const T x(9);
     auto ret = b.insert(b.begin(), 3, x);
-    assert_equals(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
   }
 
@@ -2629,7 +2520,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     Devector c = get_range<Devector>(8);
     const T x(9);
     auto ret = c.insert(c.end(), 3, x);
-    assert_equals(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
     BOOST_TEST(ret == c.begin() + 8);
   }
 
@@ -2644,7 +2535,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     auto origi_end = d.end();
     auto ret = d.insert(d.begin(), 3, x);
 
-    assert_equals(d, {9, 9, 9, 4, 5, 6, 7, 8});
+    test_equal_range(d, {9, 9, 9, 4, 5, 6, 7, 8});
     BOOST_TEST(origi_end == d.end());
     BOOST_TEST(ret == d.begin());
   }
@@ -2660,7 +2551,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     auto origi_begin = e.begin();
     auto ret = e.insert(e.end(), 3, x);
 
-    assert_equals(e, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(e, {1, 2, 3, 4, 5, 9, 9, 9});
     BOOST_TEST(origi_begin == e.begin());
     BOOST_TEST(ret == e.begin() + 5);
   }
@@ -2677,7 +2568,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     const T x(9);
     auto ret = f.insert(f.begin() + 2, 4, x);
 
-    assert_equals(f, {3, 4, 9, 9, 9, 9, 5, 6});
+    test_equal_range(f, {3, 4, 9, 9, 9, 9, 5, 6});
     BOOST_TEST(f.capacity_alloc_count == 0u);
     BOOST_TEST(ret == f.begin() + 2);
   }
@@ -2695,7 +2586,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     const T x(9);
     auto ret = g.insert(g.begin() + 2, 5, x);
 
-    assert_equals(g, {3, 4, 9, 9, 9, 9, 9, 5});
+    test_equal_range(g, {3, 4, 9, 9, 9, 9, 9, 5});
     BOOST_TEST(g.capacity_alloc_count == 0u);
     BOOST_TEST(ret == g.begin() + 2);
   }
@@ -2706,7 +2597,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     const T x(9);
     auto ret = g.insert(g.begin() + 2, 5, x);
 
-    assert_equals(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
+    test_equal_range(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == g.begin() + 2);
   }
 
@@ -2725,7 +2616,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
     ret = h.insert(h.end(), 0, x);
     BOOST_TEST(ret == h.end());
 
-    assert_equals(h, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(h, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(h.capacity_alloc_count == 0u);
   }
 
@@ -2738,7 +2629,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_n, Devector, t_is_copy_constructible)
 
     auto ret = i.insert(i.end() - 1, 2, *i.begin());
 
-    assert_equals(i, {3, 4, 5, 6, 7, 3, 3, 8});
+    test_equal_range(i, {3, 4, 5, 6, 7, 3, 3, 8});
     BOOST_TEST(i.capacity_alloc_count == 0u);
     BOOST_TEST(ret == i.begin() + 5);
   }
@@ -2781,7 +2672,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
     Devector a;
     auto ret = a.insert(a.end(), input_begin, input_end);
-    assert_equals(a, {9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9});
     BOOST_TEST(ret == a.begin());
   }
 
@@ -2793,7 +2684,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
     Devector b = get_range<Devector>(8);
     auto ret = b.insert(b.begin(), input_begin, input_end);
-    assert_equals(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
   }
 
@@ -2805,7 +2696,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
     Devector c = get_range<Devector>(8);
     auto ret = c.insert(c.end(), input_begin, input_end);
-    assert_equals(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
     BOOST_TEST(ret == c.begin() + 8);
   }
 
@@ -2824,7 +2715,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
     auto origi_end = d.end();
     auto ret = d.insert(d.begin(), input_begin, input_end);
 
-    assert_equals(d, {9, 9, 9, 4, 5, 6, 7, 8});
+    test_equal_range(d, {9, 9, 9, 4, 5, 6, 7, 8});
     BOOST_TEST(origi_end == d.end());
     BOOST_TEST(ret == d.begin());
   }
@@ -2844,7 +2735,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
     auto origi_begin = e.begin();
     auto ret = e.insert(e.end(), input_begin, input_end);
 
-    assert_equals(e, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(e, {1, 2, 3, 4, 5, 9, 9, 9});
     BOOST_TEST(origi_begin == e.begin());
     BOOST_TEST(ret == e.begin() + 5);
   }
@@ -2865,7 +2756,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
     auto ret = f.insert(f.begin() + 2, input_begin, input_end);
 
-    assert_equals(f, {3, 4, 9, 9, 9, 9, 5, 6});
+    test_equal_range(f, {3, 4, 9, 9, 9, 9, 5, 6});
     BOOST_TEST(f.capacity_alloc_count == 0u);
     BOOST_TEST(ret == f.begin() + 2);
   }
@@ -2887,7 +2778,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
     auto ret = g.insert(g.begin() + 2, input_begin, input_end);
 
-    assert_equals(g, {3, 4, 9, 9, 9, 9, 9, 5});
+    test_equal_range(g, {3, 4, 9, 9, 9, 9, 9, 5});
     BOOST_TEST(g.capacity_alloc_count == 0u);
     BOOST_TEST(ret == g.begin() + 2);
   }
@@ -2902,7 +2793,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
 
     auto ret = g.insert(g.begin() + 2, input_begin, input_end);
 
-    assert_equals(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
+    test_equal_range(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == g.begin() + 2);
   }
 
@@ -2923,7 +2814,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_input_range, Devector, t_is_copy_const
     ret = h.insert(h.end(), input_begin, input_begin);
     BOOST_TEST(ret == h.end());
 
-    assert_equals(h, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(h, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(h.capacity_alloc_count == 0u);
   }
 
@@ -2969,21 +2860,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
   {
     Devector a;
     auto ret = a.insert(a.end(), xb, xb+5);
-    assert_equals(a, {9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 9, 9, 9, 9});
     BOOST_TEST(ret == a.begin());
   }
 
   {
     Devector b = get_range<Devector>(8);
     auto ret = b.insert(b.begin(), xb, xb+3);
-    assert_equals(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
   }
 
   {
     Devector c = get_range<Devector>(8);
     auto ret = c.insert(c.end(), xb, xb+3);
-    assert_equals(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
     BOOST_TEST(ret == c.begin() + 8);
   }
 
@@ -2997,7 +2888,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
     auto origi_end = d.end();
     auto ret = d.insert(d.begin(), xb, xb+3);
 
-    assert_equals(d, {9, 9, 9, 4, 5, 6, 7, 8});
+    test_equal_range(d, {9, 9, 9, 4, 5, 6, 7, 8});
     BOOST_TEST(origi_end == d.end());
     BOOST_TEST(ret == d.begin());
   }
@@ -3012,7 +2903,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
     auto origi_begin = e.begin();
     auto ret = e.insert(e.end(), xb, xb+3);
 
-    assert_equals(e, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(e, {1, 2, 3, 4, 5, 9, 9, 9});
     BOOST_TEST(origi_begin == e.begin());
     BOOST_TEST(ret == e.begin() + 5);
   }
@@ -3028,7 +2919,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 
     auto ret = f.insert(f.begin() + 2, xb, xb+4);
 
-    assert_equals(f, {3, 4, 9, 9, 9, 9, 5, 6});
+    test_equal_range(f, {3, 4, 9, 9, 9, 9, 5, 6});
     BOOST_TEST(f.capacity_alloc_count == 0u);
     BOOST_TEST(ret == f.begin() + 2);
   }
@@ -3045,7 +2936,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 
     auto ret = g.insert(g.begin() + 2, xb, xb+5);
 
-    assert_equals(g, {3, 4, 9, 9, 9, 9, 9, 5});
+    test_equal_range(g, {3, 4, 9, 9, 9, 9, 9, 5});
     BOOST_TEST(g.capacity_alloc_count == 0u);
     BOOST_TEST(ret == g.begin() + 2);
   }
@@ -3055,7 +2946,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 
     auto ret = g.insert(g.begin() + 2, xb, xb+5);
 
-    assert_equals(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
+    test_equal_range(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == g.begin() + 2);
   }
 
@@ -3072,7 +2963,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
     ret = h.insert(h.end(), xb, xb);
     BOOST_TEST(ret == h.end());
 
-    assert_equals(h, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(h, {1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(h.capacity_alloc_count == 0u);
   }
 
@@ -3105,21 +2996,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
   {
     Devector a;
     auto ret = a.insert(a.end(), {T(123), T(123), T(123), T(123), T(123)});
-    assert_equals(a, {123, 123, 123, 123, 123});
+    test_equal_range(a, {123, 123, 123, 123, 123});
     BOOST_TEST(ret == a.begin());
   }
 
   {
     Devector b = get_range<Devector>(8);
     auto ret = b.insert(b.begin(), {T(9), T(9), T(9)});
-    assert_equals(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
   }
 
   {
     Devector c = get_range<Devector>(8);
     auto ret = c.insert(c.end(), {T(9), T(9), T(9)});
-    assert_equals(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
     BOOST_TEST(ret == c.begin() + 8);
   }
 
@@ -3133,7 +3024,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
     auto origi_end = d.end();
     auto ret = d.insert(d.begin(), {T(9), T(9), T(9)});
 
-    assert_equals(d, {9, 9, 9, 4, 5, 6, 7, 8});
+    test_equal_range(d, {9, 9, 9, 4, 5, 6, 7, 8});
     BOOST_TEST(origi_end == d.end());
     BOOST_TEST(ret == d.begin());
   }
@@ -3148,7 +3039,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
     auto origi_begin = e.begin();
     auto ret = e.insert(e.end(), {T(9), T(9), T(9)});
 
-    assert_equals(e, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(e, {1, 2, 3, 4, 5, 9, 9, 9});
     BOOST_TEST(origi_begin == e.begin());
     BOOST_TEST(ret == e.begin() + 5);
   }
@@ -3164,7 +3055,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
 
     auto ret = f.insert(f.begin() + 2, {T(9), T(9), T(9), T(9)});
 
-    assert_equals(f, {3, 4, 9, 9, 9, 9, 5, 6});
+    test_equal_range(f, {3, 4, 9, 9, 9, 9, 5, 6});
     BOOST_TEST(f.capacity_alloc_count == 0u);
     BOOST_TEST(ret == f.begin() + 2);
   }
@@ -3181,7 +3072,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
 
     auto ret = g.insert(g.begin() + 2, {T(9), T(9), T(9), T(9), T(9)});
 
-    assert_equals(g, {3, 4, 9, 9, 9, 9, 9, 5});
+    test_equal_range(g, {3, 4, 9, 9, 9, 9, 9, 5});
     BOOST_TEST(g.capacity_alloc_count == 0u);
     BOOST_TEST(ret == g.begin() + 2);
   }
@@ -3191,7 +3082,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
 
     auto ret = g.insert(g.begin() + 2, {T(9), T(9), T(9), T(9), T(9)});
 
-    assert_equals(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
+    test_equal_range(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == g.begin() + 2);
   }
 
@@ -3222,21 +3113,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase, Devector, all_devectors)
   {
     Devector a = get_range<Devector>(4);
     auto ret = a.erase(a.begin());
-    assert_equals(a, {2, 3, 4});
+    test_equal_range(a, {2, 3, 4});
     BOOST_TEST(ret == a.begin());
   }
 
   {
     Devector b = get_range<Devector>(4);
     auto ret = b.erase(b.end() - 1);
-    assert_equals(b, {1, 2, 3});
+    test_equal_range(b, {1, 2, 3});
     BOOST_TEST(ret == b.end());
   }
 
   {
     Devector c = get_range<Devector>(6);
     auto ret = c.erase(c.begin() + 2);
-    assert_equals(c, {1, 2, 4, 5, 6});
+    test_equal_range(c, {1, 2, 4, 5, 6});
     BOOST_TEST(ret == c.begin() + 2);
     BOOST_TEST(c.front_free_capacity() > 0u);
   }
@@ -3244,7 +3135,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase, Devector, all_devectors)
   {
     Devector d = get_range<Devector>(6);
     auto ret = d.erase(d.begin() + 4);
-    assert_equals(d, {1, 2, 3, 4, 6});
+    test_equal_range(d, {1, 2, 3, 4, 6});
     BOOST_TEST(ret == d.begin() + 4);
     BOOST_TEST(d.back_free_capacity() > 0u);
   }
@@ -3261,7 +3152,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase_range, Devector, all_devectors)
   {
     Devector b = get_range<Devector>(8);
     auto ret = b.erase(b.begin(), b.begin() + 2);
-    assert_equals(b, {3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
     BOOST_TEST(b.front_free_capacity() > 0u);
   }
@@ -3269,7 +3160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase_range, Devector, all_devectors)
   {
     Devector c = get_range<Devector>(8);
     auto ret = c.erase(c.begin() + 1, c.begin() + 3);
-    assert_equals(c, {1, 4, 5, 6, 7, 8});
+    test_equal_range(c, {1, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == c.begin() + 1);
     BOOST_TEST(c.front_free_capacity() > 0u);
   }
@@ -3277,7 +3168,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase_range, Devector, all_devectors)
   {
     Devector d = get_range<Devector>(8);
     auto ret = d.erase(d.end() - 2, d.end());
-    assert_equals(d, {1, 2, 3, 4, 5, 6});
+    test_equal_range(d, {1, 2, 3, 4, 5, 6});
     BOOST_TEST(ret == d.end());
     BOOST_TEST(d.back_free_capacity() > 0u);
   }
@@ -3285,7 +3176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase_range, Devector, all_devectors)
   {
     Devector e = get_range<Devector>(8);
     auto ret = e.erase(e.end() - 3, e.end() - 1);
-    assert_equals(e, {1, 2, 3, 4, 5, 8});
+    test_equal_range(e, {1, 2, 3, 4, 5, 8});
     BOOST_TEST(ret == e.end() - 1);
     BOOST_TEST(e.back_free_capacity() > 0u);
   }
@@ -3293,7 +3184,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_erase_range, Devector, all_devectors)
   {
     Devector f = get_range<Devector>(8);
     auto ret = f.erase(f.begin(), f.end());
-    assert_equals(f, {});
+    test_equal_range(f, {});
     BOOST_TEST(ret == f.end());
   }
 }
@@ -3322,12 +3213,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
     swap(a, b);
 
     BOOST_TEST(b.empty());
-    assert_equals(a, {1, 2, 3, 4});
+    test_equal_range(a, {1, 2, 3, 4});
 
     swap(a, b);
 
     BOOST_TEST(a.empty());
-    assert_equals(b, {1, 2, 3, 4});
+    test_equal_range(b, {1, 2, 3, 4});
   }
 
   // small-small / big-big
@@ -3337,13 +3228,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
     swap(a, b);
 
-    assert_equals(a, {13, 14, 15, 16, 17, 18});
-    assert_equals(b, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {13, 14, 15, 16, 17, 18});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6});
 
     swap(a, b);
 
-    assert_equals(b, {13, 14, 15, 16, 17, 18});
-    assert_equals(a, {1, 2, 3, 4, 5, 6});
+    test_equal_range(b, {13, 14, 15, 16, 17, 18});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6});
   }
 
   // big-small + small-big
@@ -3353,13 +3244,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
     swap(a, b);
 
-    assert_equals(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-    assert_equals(a, {9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    test_equal_range(a, {9, 10, 11, 12, 13, 14, 15, 16});
 
     swap(a, b);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-    assert_equals(b, {9, 10, 11, 12, 13, 14, 15, 16});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    test_equal_range(b, {9, 10, 11, 12, 13, 14, 15, 16});
   }
 
   // self swap
@@ -3368,7 +3259,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
     swap(a, a);
 
-    assert_equals(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
   }
 
   // no overlap
@@ -3384,8 +3275,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
     swap(a, b);
 
-    assert_equals(a, {13, 14, 15, 16});
-    assert_equals(b, {1, 2, 3, 4, 5, 6});
+    test_equal_range(a, {13, 14, 15, 16});
+    test_equal_range(b, {1, 2, 3, 4, 5, 6});
   }
 
   // exceptions
@@ -3429,7 +3320,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
     test_elem_throw::do_not_throw();
 
     // content of `a` might be moved, do not check that
-    assert_equals(b, b_expected);
+    test_equal_range(b, b_expected);
   }
 
   // big-big does not copy or move
@@ -3445,8 +3336,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
     test_elem_throw::do_not_throw();
 
-    assert_equals(a, c);
-    assert_equals(b, c);
+    test_equal_range(a, c);
+    test_equal_range(b, c);
   }
 }
 
