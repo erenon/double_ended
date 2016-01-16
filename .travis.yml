@@ -19,7 +19,7 @@ matrix:
   include:
 
     # GCC 4.8
-    - env: CXX=g++-4.8 CXX_PATH=/usr/bin/g++-4.8 CXX_NAME=gcc SANITIZE_DOUBLE_ENDED=true
+    - env: CXX=g++-4.8 CXX_PATH=/usr/bin/g++-4.8 CXX_NAME=gcc VARIANT=sanitize
       addons:
         apt:
           sources:
@@ -28,7 +28,7 @@ matrix:
             - g++-4.8
 
     # GCC 5.3
-    - env: CXX=g++-5 CXX_PATH=/usr/bin/g++-5 CXX_NAME=gcc SANITIZE_DOUBLE_ENDED=true
+    - env: CXX=g++-5 CXX_PATH=/usr/bin/g++-5 CXX_NAME=gcc VARIANT=sanitize
       addons:
         apt:
           sources:
@@ -37,7 +37,7 @@ matrix:
             - g++-5
 
     # Clang 3.5
-    - env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang
+    - env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang VARIANT=release
       addons:
         apt:
           sources:
@@ -47,7 +47,7 @@ matrix:
             - clang-3.5
 
     # Clang 3.7
-    - env: CXX=clang++-3.7 CXX_PATH=/usr/bin/clang++-3.7 CXX_NAME=clang
+    - env: CXX=clang++-3.7 CXX_PATH=/usr/bin/clang++-3.7 CXX_NAME=clang VARIANT=release
       addons:
         apt:
           sources:
@@ -81,5 +81,5 @@ script:
   - |
     echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > project-config.jam
     cd test
-    b2 --toolset=${CXX_NAME} -j2
+    b2 toolset=${CXX_NAME} variant=${VARIANT} -j2
 

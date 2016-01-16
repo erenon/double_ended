@@ -3,11 +3,15 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 using testing ;
+import notfile ;
+
+path-constant BUILD_DIR : /var/tmp/double_ended/build/test ;
+path-constant TOP : ../ ;
 
 project boost/double_ended
-  : build-dir /var/tmp/double_ended/build/test
+  : build-dir $(BUILD_DIR)
   : requirements
-    <include>../include
+    <include>$(TOP)/include
   ;
 
 local toolset =
@@ -30,48 +34,85 @@ local toolset =
   <toolset>msvc:<cxxflags>/bigobj
 ;
 
+variant sanitize :
+  <optimization>off
+  <debug-symbols>on
+  <cxxflags>-fsanitize=address
+;
+
+variant coverage :
+  <optimization>off
+  <debug-symbols>on
+  <cxxflags>--coverage
+  <linkflags>--coverage
+;
+
 lib boost_serialization : : <search>$(BOOST_ROOT)/stage/lib ;
 
-local libs = ;
+# lib asan must come first on the link line among the libraries,
+# specify every other library as dependency to force
+# Boost.Build to put it there.
+lib asan : : <use>boost_serialization <name>asan ;
 
-if [ modules.peek : SANITIZE_DOUBLE_ENDED ]
+# Link asan library if variant=sanitize
+#
+# Specifying lib explicitly in variant requirements
+# results in recursive target definition, because
+# the build system wants to build the defined library
+# and link it to itself.
+#
+# We also can't just specify -lasan as a link flag,
+# because that would appear on the command line
+# later than other libraries, and asan must come first.
+rule link_asan ( properties * )
 {
-  ECHO "Sanitize double_ended" ;
-
-  toolset +=
-    <toolset>gcc:<cxxflags>-fsanitize=address
-    <toolset>clang:<cxxflags>-fsanitize=address
-  ;
-
-  lib asan : : <use>boost_serialization <name>asan ;
-  libs += asan ;
+  local result ;
+  if <variant>sanitize in $(properties)
+  {
+      result += <library>asan ;
+  }
+  return $(result) ;
 }
 
 rule test_all
 {
    local rules = ;
 
-   local sources = [ glob *.cpp ] ;
-   sources      += [ glob ../example/*.cpp ] ;
+   local sources = [ glob $(TOP)/test/*.cpp ] ;
+   sources      += [ glob $(TOP)/example/*.cpp ] ;
 
    for local source in $(sources)
    {
-      local actual_libs = $(libs) ;
+      local libs ;
 
       if [ MATCH (.*serialize.+) : $(source) ]
       {
-        actual_libs += boost_serialization ;
+        libs += boost_serialization ;
       }
 
-      rules += [ run $(source) $(actual_libs)
+      rules += [ run $(source) $(libs)
       :  # args passed to tests
       :  # input files
-      :  # other properties
+      :  # requirements
          $(toolset)
+         <conditional>@link_asan
       ] ;
    }
 
    return $(rules) ;
 }
 
-test-suite double_ended_test : [ test_all ] ;
+alias double_ended_test : [ test_all ] ;
+
+notfile lcov : @lcov ;
+explicit lcov ;
+
+# Generate Code Coverage report
+#
+# Add --rc lcov_branch_coverage=1 to lcov and --branch-coverage to genhtml to get branch coverage.
+# To make the --no-external lcov switch work, move this file one dir up and adjust $TOP
+actions lcov
+{
+  lcov -c -d "$(BUILD_DIR)" -b "$(TOP)" -o "$(BUILD_DIR)/double_ended-coverage.info";
+  genhtml "$(BUILD_DIR)/double_ended-coverage.info" -o "$(BUILD_DIR)/coverage-report";
+}
