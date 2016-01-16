@@ -115,7 +115,7 @@ private:
   static constexpr bool t_is_trivially_copyable = allocator_traits::t_is_trivially_copyable;
 
   typedef typename allocator_traits::template rebind_alloc<pointer> map_allocator;
-  typedef devector<pointer, devector_small_buffer_policy<0>, devector_growth_policy, map_allocator> map_t;
+  typedef devector<pointer, small_buffer_size<0>, devector_growth_policy, map_allocator> map_t;
   typedef typename map_t::iterator map_iterator;
   typedef typename map_t::const_iterator const_map_iterator;
 

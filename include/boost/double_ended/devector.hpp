@@ -35,7 +35,7 @@ namespace double_ended {
  * Models the `SmallBufferPolicy` concept of the devector class.
  */
 template <unsigned Size>
-struct devector_small_buffer_policy
+struct small_buffer_size
 {
   BOOST_STATIC_CONSTANT(unsigned, size = Size);
 };
@@ -131,7 +131,7 @@ struct unsafe_uninitialized_tag {};
  * -----------|-------------|------------
  * `SBP::size` | `size_type` | The total number of elements that can be stored without allocation
  *
- * @ref devector_small_buffer_policy models the `SmallBufferPolicy` concept.
+ * @ref small_buffer_size models the `SmallBufferPolicy` concept.
  *
  * The type `GP` models the `GrowthPolicy` concept if it satisfies the following requirements
  * when `gp` is an instance of such a class:
@@ -159,7 +159,7 @@ struct unsafe_uninitialized_tag {};
  */
 template <
   typename T,
-  typename SmallBufferPolicy = devector_small_buffer_policy<0>,
+  typename SmallBufferPolicy = small_buffer_size<0>,
   typename GrowthPolicy = devector_growth_policy,
   typename Allocator = std::allocator<T>
 >
@@ -202,8 +202,8 @@ private:
   static constexpr bool t_is_nothrow_constructible = allocator_traits::t_is_nothrow_constructible;
   static constexpr bool t_is_trivially_copyable = allocator_traits::t_is_trivially_copyable;
 
-  static constexpr size_type small_buffer_size = SmallBufferPolicy::size;
-  static constexpr bool no_small_buffer = (small_buffer_size == 0);
+  static constexpr size_type sbuffer_size = SmallBufferPolicy::size;
+  static constexpr bool no_small_buffer = (sbuffer_size == 0);
 
 #endif // ifndef BOOST_DOUBLE_ENDED_DOXYGEN_INVOKED
 
@@ -501,7 +501,7 @@ public:
     if (rhs.is_small() == false)
     {
       // buffer is already acquired, reset rhs
-      rhs._storage._capacity = small_buffer_size;
+      rhs._storage._capacity = sbuffer_size;
       rhs._buffer = rhs._storage.small_buffer_address();
       rhs._front_index = 0;
       rhs._back_index = 0;
@@ -629,7 +629,7 @@ public:
       _back_index = x._back_index;
 
       // leave x in valid state
-      x._storage._capacity = small_buffer_size;
+      x._storage._capacity = sbuffer_size;
       x._buffer = _storage.small_buffer_address();
       x._back_index = x._front_index = 0;
     }
@@ -1309,19 +1309,19 @@ public:
   void shrink_to_fit()
   {
     if (
-       GrowthPolicy::should_shrink(size(), capacity(), small_buffer_size) == false
+       GrowthPolicy::should_shrink(size(), capacity(), sbuffer_size) == false
     || is_small()
     )
     {
       return;
     }
 
-    if (size() <= small_buffer_size)
+    if (size() <= sbuffer_size)
     {
       buffer_move_or_copy(_storage.small_buffer_address());
 
       _buffer = _storage.small_buffer_address();
-      _storage._capacity = small_buffer_size;
+      _storage._capacity = sbuffer_size;
       _back_index = size();
       _front_index = 0;
     }
@@ -1904,7 +1904,7 @@ public:
     else
     {
       // avoid buffer overflow if original small buffer is too large
-      typedef devector<T, devector_small_buffer_policy<32>, GrowthPolicy, Allocator> temp_devector;
+      typedef devector<T, small_buffer_size<32>, GrowthPolicy, Allocator> temp_devector;
 
       temp_devector range(first, last);
       return insert_range(position, range.begin(), range.end());
@@ -2130,7 +2130,7 @@ private:
 
   pointer allocate(size_type capacity)
   {
-    if (capacity <= small_buffer_size)
+    if (capacity <= sbuffer_size)
     {
       return _storage.small_buffer_address();
     }
@@ -2487,7 +2487,7 @@ private:
 
   void reallocate_at(size_type new_capacity, size_type buffer_offset)
   {
-    BOOST_ASSERT(new_capacity > small_buffer_size);
+    BOOST_ASSERT(new_capacity > sbuffer_size);
 
     pointer new_buffer = allocate(new_capacity);
     allocation_guard new_buffer_guard(new_buffer, new_capacity, get_allocator_ref());
@@ -2890,27 +2890,27 @@ private:
        (!_storage._capacity || _buffer)
     && _front_index <= _back_index
     && _back_index <= _storage._capacity
-    && small_buffer_size <= _storage._capacity;
+    && sbuffer_size <= _storage._capacity;
   }
 
   // Small buffer
 
   bool is_small() const
   {
-    return small_buffer_size && _storage._capacity <= small_buffer_size;
+    return sbuffer_size && _storage._capacity <= sbuffer_size;
   }
 
   typedef boost::aligned_storage<
-    sizeof(T) * small_buffer_size,
+    sizeof(T) * sbuffer_size,
     std::alignment_of<T>::value
   > small_buffer_t;
 
   // Achieve optimal space by leveraging EBO
   struct storage_t : small_buffer_t
   {
-    storage_t() : _capacity(small_buffer_size) {}
+    storage_t() : _capacity(sbuffer_size) {}
     storage_t(size_type capacity)
-      : _capacity((std::max)(capacity, size_type{small_buffer_size}))
+      : _capacity((std::max)(capacity, size_type{sbuffer_size}))
     {}
 
     T* small_buffer_address()

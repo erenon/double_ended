@@ -32,7 +32,7 @@
 using namespace boost::double_ended;
 
 template <typename T>
-using small_devector = devector<T, devector_small_buffer_policy<16>>;
+using small_devector = devector<T, small_buffer_size<16>>;
 
 template <typename SizeType>
 struct different_growth_policy
@@ -66,10 +66,10 @@ typedef boost::mpl::list<
   small_devector<only_movable>,
   small_devector<no_default_ctor>,
 
-  devector<unsigned, devector_small_buffer_policy<0>, devector_growth_policy, different_allocator<unsigned>>,
-  devector<unsigned, devector_small_buffer_policy<16>, devector_growth_policy, different_allocator<unsigned>>,
+  devector<unsigned, small_buffer_size<0>, devector_growth_policy, different_allocator<unsigned>>,
+  devector<unsigned, small_buffer_size<16>, devector_growth_policy, different_allocator<unsigned>>,
 
-  devector<unsigned, devector_small_buffer_policy<8>, different_growth_policy<std::size_t>>
+  devector<unsigned, small_buffer_size<8>, different_growth_policy<std::size_t>>
 > all_devectors;
 #else
 typedef boost::mpl::list<
@@ -81,10 +81,10 @@ using t_is_default_constructible = if_t_is_default_constructible<all_devectors>;
 using t_is_copy_constructible = if_t_is_copy_constructible<all_devectors>;
 
 template <typename>
-struct small_buffer_size;
+struct sbuffer_size;
 
 template <typename U, typename SBP, typename GP, typename A>
-struct small_buffer_size<devector<U, SBP, GP, A>>
+struct sbuffer_size<devector<U, SBP, GP, A>>
 {
   static constexpr unsigned value = SBP::size;
 };
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_default, Devector, all_devectors)
 
   BOOST_TEST(a.empty());
   BOOST_TEST(a.capacity_alloc_count == 0u);
-  BOOST_TEST(a.capacity() == unsigned{small_buffer_size<Devector>::value});
+  BOOST_TEST(a.capacity() == unsigned{sbuffer_size<Devector>::value});
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_allocator, Devector, all_devectors)
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_allocator, Devector, all_devector
 
   BOOST_TEST(a.empty());
   BOOST_TEST(a.capacity_alloc_count == 0u);
-  BOOST_TEST(a.capacity() == unsigned{small_buffer_size<Devector>::value});
+  BOOST_TEST(a.capacity() == unsigned{sbuffer_size<Devector>::value});
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_constructor_reserve_only, Devector, all_devectors)
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assign_input_range, Devector, t_is_copy_const
   using T = typename Devector::value_type;
 
   { // assign to empty, keep it small
-    const devector<T> expected = get_range<devector<T>>(small_buffer_size<Devector>::value);
+    const devector<T> expected = get_range<devector<T>>(sbuffer_size<Devector>::value);
     devector<T> input = expected;
 
     auto input_begin = make_input_iterator(input, input.begin());
@@ -1101,7 +1101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_empty, Devector, all_devectors)
 }
 
 template <typename ST>
-using gp_devector = devector<unsigned, devector_small_buffer_policy<8>, different_growth_policy<ST>>;
+using gp_devector = devector<unsigned, small_buffer_size<8>, different_growth_policy<ST>>;
 
 BOOST_AUTO_TEST_CASE(test_max_size)
 {
@@ -1149,7 +1149,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_size, Devector, all_devectors)
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_capacity, Devector, all_devectors)
 {
   Devector a;
-  BOOST_TEST(a.capacity() == unsigned{small_buffer_size<Devector>::value});
+  BOOST_TEST(a.capacity() == unsigned{sbuffer_size<Devector>::value});
 
   Devector b(128, reserve_only_tag{});
   BOOST_TEST(b.capacity() >= 128u);
@@ -1609,7 +1609,7 @@ void test_shrink_to_fit_always()
   std::vector<unsigned> expected{1, 2, 3};
   test_equal_range(a, expected);
 
-  auto sb_size = small_buffer_size<Devector>::value;
+  auto sb_size = sbuffer_size<Devector>::value;
   auto exp_capacity = (std::max)(sb_size, 3u);
   BOOST_TEST(a.capacity() == exp_capacity);
 }
@@ -1649,14 +1649,14 @@ BOOST_AUTO_TEST_CASE(shrink_to_fit)
     }
   };
 
-  using devector_u_shr       = devector<unsigned, devector_small_buffer_policy<0>, always_shrink>;
-  using small_devector_u_shr = devector<unsigned, devector_small_buffer_policy<3>, always_shrink>;
+  using devector_u_shr       = devector<unsigned, small_buffer_size<0>, always_shrink>;
+  using small_devector_u_shr = devector<unsigned, small_buffer_size<3>, always_shrink>;
 
   test_shrink_to_fit_always<devector_u_shr>();
   test_shrink_to_fit_always<small_devector_u_shr>();
 
-  using devector_u           = devector<unsigned, devector_small_buffer_policy<0>, never_shrink>;
-  using small_devector_u     = devector<unsigned, devector_small_buffer_policy<3>, never_shrink>;
+  using devector_u           = devector<unsigned, small_buffer_size<0>, never_shrink>;
+  using small_devector_u     = devector<unsigned, small_buffer_size<3>, never_shrink>;
 
   test_shrink_to_fit_never<devector_u>();
   test_shrink_to_fit_never<small_devector_u>();
@@ -3287,7 +3287,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
   // small-small with exception
 
-  if (small_buffer_size<Devector>::value && can_throw)
+  if (sbuffer_size<Devector>::value && can_throw)
   {
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(1,6,7,8);
@@ -3305,7 +3305,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_swap, Devector, all_devectors)
 
   // small-big with exception
 
-  if (small_buffer_size<Devector>::value && can_throw)
+  if (sbuffer_size<Devector>::value && can_throw)
   {
     Devector a = get_range<Devector>(8);
     Devector b = get_range<Devector>(32);
@@ -3355,7 +3355,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_clear, Devector, all_devectors)
     BOOST_TEST(a.empty());
     a.reset_alloc_stats();
 
-    for (unsigned i = 0; i < small_buffer_size<Devector>::value; ++i)
+    for (unsigned i = 0; i < sbuffer_size<Devector>::value; ++i)
     {
       a.emplace_back(i);
     }

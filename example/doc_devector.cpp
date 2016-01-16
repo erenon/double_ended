@@ -45,7 +45,7 @@ struct custom_growth_policy
   }
 };
 
-de::devector<int, de::devector_small_buffer_policy<0>, custom_growth_policy> custom_growth_devector;
+de::devector<int, de::small_buffer_size<0>, custom_growth_policy> custom_growth_devector;
 //]
 
 template <typename T>
@@ -56,7 +56,7 @@ int main()
   (void) custom_growth_devector;
 
 //[doc_devector_sbo
-  de::devector<int, de::devector_small_buffer_policy<16>> small_devector;
+  de::devector<int, de::small_buffer_size<16>> small_devector;
 
   BOOST_ASSERT(small_devector.capacity() == 16); // but no dynamic memory was allocated
 
@@ -132,7 +132,7 @@ int main()
 
   de::devector<
     int,
-    de::devector_small_buffer_policy<0>,
+    de::small_buffer_size<0>,
     de::devector_growth_policy,
     custom_allocator<int>
   > custom_alloc_devector;
