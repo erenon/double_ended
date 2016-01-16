@@ -52,6 +52,7 @@ void insert_stable()
 
   BOOST_ASSERT(four == 4); // stable_insert ensures reference stability
 //]
+  (void) four; // unused in release build if NDEBUG is defined
 }
 
 int main()
