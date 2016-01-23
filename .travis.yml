@@ -3,7 +3,6 @@
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 language: cpp
-os: linux
 sudo: false
 
 branches:
@@ -20,6 +19,7 @@ matrix:
 
     # GCC 4.8
     - env: CXX=g++-4.8 CXX_PATH=/usr/bin/g++-4.8 CXX_NAME=gcc VARIANT=sanitize
+      os: linux
       addons:
         apt:
           sources:
@@ -29,6 +29,7 @@ matrix:
 
     # GCC 5.3
     - env: CXX=g++-5 CXX_PATH=/usr/bin/g++-5 CXX_NAME=gcc VARIANT=sanitize
+      os: linux
       addons:
         apt:
           sources:
@@ -38,6 +39,7 @@ matrix:
 
     # Clang 3.5
     - env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang VARIANT=release
+      os: linux
       addons:
         apt:
           sources:
@@ -48,6 +50,7 @@ matrix:
 
     # Clang 3.7
     - env: CXX=clang++-3.7 CXX_PATH=/usr/bin/clang++-3.7 CXX_NAME=clang VARIANT=release
+      os: linux
       addons:
         apt:
           sources:
@@ -55,6 +58,11 @@ matrix:
             - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
+
+    # Xcode 6.4
+    - env: CXX=clang++ CXX_PATH=clang++ CXX_NAME=clang VARIANT=release
+      os: osx
+      osx_image: xcode6.4
 
   exclude:
     - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
