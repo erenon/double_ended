@@ -1,0 +1,18 @@
+[/
+ / (C) Copyright Benedek Thaler 2015-2016
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Acknowledgements]
+
+This library was initially founded by the Google Summer of Code 2015 program.
+I would like to thank Thorsten Ottosen for mentoring during and after the program.
+I would like to thank the Boost community for the valuable feedback.
+Design decisions were validated by looking at the excellent source of the
+[@https://github.com/gcc-mirror/gcc/tree/master/libstdc%2B%2B-v3/include libstdc++],
+[@http://llvm.org/svn/llvm-project/libcxx/trunk/include libc++]
+and [@https://github.com/boostorg/container/tree/develop/include/boost/container Boost.Container]
+libraries.
+
+[endsect]

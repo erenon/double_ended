@@ -6,7 +6,51 @@
 
 [section Build and Test]
 
-How to build and run the tests, expected output
-How to build the documentation
+The library itself is header only, no separate build is required to use it, only
+the `include/` directory has to be added to the compiler include search path.
+
+[section Build the tests]
+
+Although it is not required to use the library, the tests can be build separately.
+A `Boost` tree is needed (version 1.59 or above), with at least `bjam` and `Boost.Serialization` library installed.
+However, it's not required to use the `Boost` installation provided by the operating system or distribution.
+To avoid conflicting with such installs, `BOOST_BUILD_PATH` can be explicitly specified:
+
+    double_ended/test $ export BOOST_BUILD_PATH=/path/to/boost  # contains bjam tool, boost and stage libraries
+    double_ended/test $ $BOOST_BUILD_PATH/bjam
+
+The last command executed, the tests are compiled and executed. During compilation, no warning should be emitted
+and each test should pass, indicated by the `**passed**` string on the output.
+To change the used compiler, specify the toolchain switch:
+
+    double_ended/test $ $BOOST_BUILD_PATH/bjam toolset=gcc # or clang or msvc
+
+To build the tests in release mode, use the `release` variant:
+
+    double_ended/test $ $BOOST_BUILD_PATH/bjam variant=release
+
+On platforms where the [@https://github.com/google/sanitizers/wiki address sanitizer] is supported,
+the `sanitize` variant can be used to look for memory related errors:
+
+    double_ended/test $ $BOOST_BUILD_PATH/bjam variant=sanitize
+
+A test coverage report can be generated when the GCC toolchain is in use:
+
+    double_ended/test $ $BOOST_BUILD_PATH/bjam toolset=gcc variant=coverage
+    double_ended/test $ $BOOST_BUILD_PATH/bjam toolset=gcc lcov
+
+[endsect]
+
+[section Build the documentation]
+
+To build the documentation (this one), run `bjam` in the `doc/` directory:
+
+    double_ended/doc $ export BOOST_BUILD_PATH=/path/to/boost  # contains bjam tool
+    double_ended/doc $ $BOOST_BUILD_PATH/bjam
+
+The toolchain requires the quickbook, boostbook and doxygen tools to be
+[@http://www.boost.org/build/doc/html/bbv2/reference/tools.html#idp88891216 properly configured].
+
+[endsect]
 
 [endsect]

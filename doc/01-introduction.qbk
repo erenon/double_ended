@@ -6,8 +6,11 @@
 
 [section Introduction]
 
-The motivation of the library.
+The library provides double ended containers, similar to the ones in the C++ Standard Library,
+but with additional features geared towards high performance and unsafe constructs, giving more
+control to the user.
 
-requires C++11
+[note The library requires a C++11 compatible compiler.
+The library is proved to work with GCC 4.8 and above, Clang 3.5 and above, and with Visual Studio 2015.]
 
 [endsect]
