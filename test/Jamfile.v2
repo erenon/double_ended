@@ -4,12 +4,8 @@
 
 using testing ;
 import notfile ;
-import path ;
-import feature : feature ;
-import toolset : flags ;
 
-path-constant BUILD_DIR : /var/tmp/double_ended/build/test ;
-path-constant BENCH_DIR : /var/tmp/double_ended/build/bench ;
+path-constant BUILD_DIR : ../bin/test ;
 path-constant TOP : ../ ;
 
 project boost/double_ended
@@ -123,66 +119,18 @@ actions lcov
   genhtml "$(BUILD_DIR)/double_ended-coverage.info" -o "$(BUILD_DIR)/coverage-report";
 }
 
-feature plot_title : : free ;
-flags gnuplot plot_title <plot_title> ;
-
-actions gnuplot
+rule bench_compile
 {
-  gnuplot \
-    -e "set title \"$(plot_title)\"" \
-    -e "set term pngcairo" \
-    -e "set output '$(<)'" \
-    -e "set key left" \
-    -e "set key autotitle columnheader" \
-    -e "set autoscale xfix" \
-    -e "set format x \"%.0s%c\"" \
-    -e "set xlabel 'Container size'" \
-    -e "set ylabel 'Time Stamp Counter'" \
-    -e "plot \"$(>[1])\" u 1:2 smooth csplines, \"$(>[2])\" u 1:2 smooth csplines, \"$(>[3])\" u 1:2 smooth csplines";
-}
-
-rule plot ( file : title : src1 : src2 : src3 )
-{
-  local target = $(BENCH_DIR)/$(file).png ;
-  plot_title on $(target) = $(title) ;
-
-  return [ make $(target)
-         : $(BENCH_DIR)/$(src1).dat $(BENCH_DIR)/$(src2).dat $(BENCH_DIR)/$(src3).dat
-         : @gnuplot
-         : <plot_title>$(title)
-         ] ;
-}
-
-rule benchmark_all
-{
-  path.makedirs $(BENCH_DIR) ;
   local sources = [ glob $(TOP)/benchmark/*.cpp ] ;
-  local rules = [ run $(sources)
-  :  # args passed to tests
-     -- $(BENCH_DIR)
-  :  # input files
+  local rules = [ link $(sources)
   :  # requirements
      $(toolset)
      <conditional>@link_asan
      <threading>multi
   ] ;
 
-  rules += [ plot vector_push_back
-           : "Vector push_back() to preallocated"
-           : push_back_vector
-           : push_back_bcvector
-           : push_back_devector
-           ] ;
-
-  rules += [ plot deque_push_back
-           : "Deque push_back()"
-           : push_back_deque
-           : push_back_bcdeque
-           : push_back_batch_deque
-           ] ;
-
   return $(rules) ;
 }
 
-alias bench : [ benchmark_all ] ;
+alias bench : [ bench_compile ] ;
 explicit bench ;
