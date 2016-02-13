@@ -15,12 +15,14 @@ while also providing the regular features of `std::vector`, in particular the co
 In contrast to the standard vector, however, `devector` offers greater control over its internals.
 Like `small_vector`, it can store elements internally without dynamically allocating memory.
 
-`batch_deque` is very similar to the standard `deque`, with a slight twist. It lets you specify its /segment size/:
+`batch_deque` is very similar to the standard `deque`, with a slight twist. It lets you specify its _segment size_:
 The size of the contiguous memory segments it uses to store its elements. This provides a consistent layout across platforms,
 and lets you iterate over the segments with batch operations.
 
 Read more in the [documentation][0]
 
-> This is not an official Boost library
+## Disclaimer
+
+**This is not an official Boost library**
 
 [0]: http://erenon.hu/double_ended/
