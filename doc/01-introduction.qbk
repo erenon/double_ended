@@ -7,10 +7,12 @@
 [section Introduction]
 
 The library provides double ended containers, similar to the ones in the C++ Standard Library,
-but with additional features geared towards high performance and unsafe constructs, giving more
+but with additional features geared towards high performance, and unsafe constructs, giving more
 control to the user.
 
-[note The library requires a C++11 compatible compiler.
-The library is proved to work with GCC 4.8 and above, Clang 3.5 and above, and with Visual Studio 2015.]
+The library requires a C++11 compatible compiler.
+The library is tested and proved to work with GCC 4.8 and above, Clang 3.5 and above, and with Visual Studio 2015.
+
+[important This is not an official Boost library]
 
 [endsect]
