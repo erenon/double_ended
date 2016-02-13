@@ -1,0 +1,32 @@
+[/
+ / (C) Copyright Benedek Thaler 2015-2016
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Benchmarks]
+
+[warning The diagrams below show unexpected results. They should not be considered correct until peer-reviewed.]
+
+The first test compares the performance of the `push_back()` method on equal terms.
+The value type is `unsigned`, a primitive type. In case of the vectors, the necessary
+memory is preallocated and pre-faulted. On the first diagram, `boost::container::vector`
+and `devector` show very similar characteristics, and the latter shadows the former.
+
+[$bench/vector_push_back.png [align center]]
+
+Deques has to allocate memory on demand, because `std::deque` has
+no `reserve` method.
+
+[$bench/deque_push_back.png [align center]]
+
+The benchmarks ware produced on a machine equipped with an AMD FX 8320 (3.5 GHz) processor
+and 16 GiB of RAM memory (1600 MHz), running Linux 3.13, with CPU scaling disabled. The
+benchmark process was pinned to dedicated core, which was isolated from the operating systems
+schedulers pool (using the `isolcpus` boot flag). The benchmark program was compiled by
+GCC 5.3, using the `-O2` flag.
+
+The actual Time Stamp Counter values are not directly comparable to other values
+produced on different machines.
+
+[endsect]

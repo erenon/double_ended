@@ -21,9 +21,10 @@
 [include 01-introduction.qbk]
 [include 02-design_rationale.qbk]
 [include 03-examples.qbk]
+[include 04-benchmarks.qbk]
 
 [xinclude apidoc.xml]
 
-[include 04-build_and_test.qbk]
-[include 05-acknowledgements.qbk]
+[include 05-build_and_test.qbk]
+[include 06-acknowledgements.qbk]
 
