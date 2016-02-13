@@ -7,11 +7,11 @@
 <link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
 <link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
 <link rel="prev" href="design_rationale.html" title="Design Rationale">
-<link rel="next" href="reference.html" title="Reference">
+<link rel="next" href="benchmarks.html" title="Benchmarks">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="spirit-nav">
-<a accesskey="p" href="design_rationale.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reference.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+<a accesskey="p" href="design_rationale.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="benchmarks.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
@@ -48,7 +48,7 @@
         template argument. By default, it's set to 0, which means, no small buffer
         is used.
       </p>
-<pre class="programlisting"><span class="identifier">de</span><span class="special">::</span><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">de</span><span class="special">::</span><span class="identifier">devector_small_buffer_policy</span><span class="special">&lt;</span><span class="number">16</span><span class="special">&gt;&gt;</span> <span class="identifier">small_devector</span><span class="special">;</span>
+<pre class="programlisting"><span class="identifier">de</span><span class="special">::</span><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">de</span><span class="special">::</span><span class="identifier">small_buffer_size</span><span class="special">&lt;</span><span class="number">16</span><span class="special">&gt;&gt;</span> <span class="identifier">small_devector</span><span class="special">;</span>
 
 <span class="identifier">BOOST_ASSERT</span><span class="special">(</span><span class="identifier">small_devector</span><span class="special">.</span><span class="identifier">capacity</span><span class="special">()</span> <span class="special">==</span> <span class="number">16</span><span class="special">);</span> <span class="comment">// but no dynamic memory was allocated</span>
 
@@ -113,7 +113,7 @@
   <span class="special">}</span>
 <span class="special">};</span>
 
-<span class="identifier">de</span><span class="special">::</span><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">de</span><span class="special">::</span><span class="identifier">devector_small_buffer_policy</span><span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;,</span> <span class="identifier">custom_growth_policy</span><span class="special">&gt;</span> <span class="identifier">custom_growth_devector</span><span class="special">;</span>
+<span class="identifier">de</span><span class="special">::</span><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span> <span class="identifier">de</span><span class="special">::</span><span class="identifier">small_buffer_size</span><span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;,</span> <span class="identifier">custom_growth_policy</span><span class="special">&gt;</span> <span class="identifier">custom_growth_devector</span><span class="special">;</span>
 </pre>
 <p>
         With this policy, when an element is pushed to a <code class="computeroutput"><span class="identifier">devector</span></code>
@@ -175,7 +175,7 @@
       </p>
 <pre class="programlisting"><span class="comment">// int sockfd = socket(...); connect(...);</span>
 <span class="identifier">de</span><span class="special">::</span><span class="identifier">devector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="identifier">buffer</span><span class="special">(</span><span class="number">256</span><span class="special">,</span> <span class="identifier">de</span><span class="special">::</span><span class="identifier">unsafe_uninitialized_tag</span><span class="special">{});</span>
-<span class="identifier">ssize_t</span> <span class="identifier">recvSize</span> <span class="special">=</span> <span class="identifier">recv</span><span class="special">(</span><span class="identifier">sockfd</span><span class="special">,</span> <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">data</span><span class="special">(),</span> <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">size</span><span class="special">(),</span> <span class="number">0</span><span class="special">);</span>
+<span class="keyword">long</span> <span class="identifier">recvSize</span> <span class="special">=</span> <span class="identifier">recv</span><span class="special">(</span><span class="identifier">sockfd</span><span class="special">,</span> <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">data</span><span class="special">(),</span> <span class="identifier">buffer</span><span class="special">.</span><span class="identifier">size</span><span class="special">(),</span> <span class="number">0</span><span class="special">);</span>
 
 <span class="keyword">if</span> <span class="special">(</span><span class="identifier">recvSize</span> <span class="special">&gt;=</span> <span class="number">0</span><span class="special">)</span>
 <span class="special">{</span>
@@ -211,7 +211,7 @@
 
 <span class="identifier">de</span><span class="special">::</span><span class="identifier">devector</span><span class="special">&lt;</span>
   <span class="keyword">int</span><span class="special">,</span>
-  <span class="identifier">de</span><span class="special">::</span><span class="identifier">devector_small_buffer_policy</span><span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;,</span>
+  <span class="identifier">de</span><span class="special">::</span><span class="identifier">small_buffer_size</span><span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;,</span>
   <span class="identifier">de</span><span class="special">::</span><span class="identifier">devector_growth_policy</span><span class="special">,</span>
   <span class="identifier">custom_allocator</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span>
 <span class="special">&gt;</span> <span class="identifier">custom_alloc_devector</span><span class="special">;</span>
@@ -320,14 +320,14 @@
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
 <td align="left"></td>
-<td align="right"><div class="copyright-footer">Copyright &#169; 2015 Benedek Thaler<p>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2015, 2016 Benedek Thaler<p>
         Boost Software License, Version 1.0.
       </p>
 </div></td>
 </tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="design_rationale.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="reference.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
+<a accesskey="p" href="design_rationale.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="benchmarks.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
 </div>
 </body>
 </html>

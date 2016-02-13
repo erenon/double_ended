@@ -13,7 +13,7 @@
 <div class="titlepage"><div>
 <div><h2 class="title">
 <a name="double_ended"></a>Chapter&#160;1.&#160;Boost.DoubleEnded 1</h2></div>
-<div><p class="copyright">Copyright &#169; 2015 Benedek Thaler</p></div>
+<div><p class="copyright">Copyright &#169; 2015, 2016 Benedek Thaler</p></div>
 <div><div class="legalnotice">
 <a name="double_ended.legal"></a><p>
         Boost Software License, Version 1.0.
@@ -37,6 +37,7 @@
 <dt><span class="section"><a href="double_ended/examples.html#double_ended.examples.serialize_containers">Serialize
       containers</a></span></dt>
 </dl></dd>
+<dt><span class="section"><a href="double_ended/benchmarks.html">Benchmarks</a></span></dt>
 <dt><span class="section"><a href="double_ended/reference.html">Reference</a></span></dt>
 <dd><dl>
 <dt><span class="section"><a href="double_ended/reference.html#header.boost.double_ended.batch_deque_hpp">Header &lt;boost/double_ended/batch_deque.hpp&gt;</a></span></dt>
@@ -45,6 +46,13 @@
 <dt><span class="section"><a href="double_ended/reference.html#header.boost.double_ended.serialize_devector_hpp">Header &lt;boost/double_ended/serialize_devector.hpp&gt;</a></span></dt>
 </dl></dd>
 <dt><span class="section"><a href="double_ended/build_and_test.html">Build and Test</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="double_ended/build_and_test.html#double_ended.build_and_test.build_the_tests">Build the
+      tests</a></span></dt>
+<dt><span class="section"><a href="double_ended/build_and_test.html#double_ended.build_and_test.build_the_documentation">Build
+      the documentation</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="double_ended/acknowledgements.html">Acknowledgements</a></span></dt>
 </dl>
 </div>
 <div class="section">
@@ -52,15 +60,28 @@
 <a name="double_ended.introduction"></a><a class="link" href="index.html#double_ended.introduction" title="Introduction">Introduction</a>
 </h2></div></div></div>
 <p>
-      The motivation of the library.
+      The library provides double ended containers, similar to the ones in the C++
+      Standard Library, but with additional features geared towards high performance,
+      and unsafe constructs, giving more control to the user.
     </p>
 <p>
-      requires C++11
+      The library requires a C++11 compatible compiler. The library is tested and
+      proved to work with GCC 4.8 and above, Clang 3.5 and above, and with Visual
+      Studio 2015.
     </p>
+<div class="important"><table border="0" summary="Important">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="http://www.boost.org/doc/libs/common/doc/src/images/important.png"></td>
+<th align="left">Important</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+        This is not an official Boost library
+      </p></td></tr>
+</table></div>
 </div>
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
-<td align="left"><p><small>Last revised: December 29, 2015 at 11:22:16 GMT</small></p></td>
+<td align="left"><p><small>Last revised: February 13, 2016 at 10:14:40 GMT</small></p></td>
 <td align="right"><div class="copyright-footer"></div></td>
 </tr></table>
 <hr>

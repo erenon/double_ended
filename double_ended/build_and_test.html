@@ -7,29 +7,103 @@
 <link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
 <link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Boost.DoubleEnded 1">
 <link rel="prev" href="../boost/double_ended/unsafe_uninitialized_tag.html" title="Struct unsafe_uninitialized_tag">
+<link rel="next" href="acknowledgements.html" title="Acknowledgements">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="spirit-nav">
-<a accesskey="p" href="../boost/double_ended/unsafe_uninitialized_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a>
+<a accesskey="p" href="../boost/double_ended/unsafe_uninitialized_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="acknowledgements.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
 <a name="double_ended.build_and_test"></a><a class="link" href="build_and_test.html" title="Build and Test">Build and Test</a>
 </h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="build_and_test.html#double_ended.build_and_test.build_the_tests">Build the
+      tests</a></span></dt>
+<dt><span class="section"><a href="build_and_test.html#double_ended.build_and_test.build_the_documentation">Build
+      the documentation</a></span></dt>
+</dl></div>
 <p>
-      How to build and run the tests, expected output How to build the documentation
+      The library itself is header only, no separate build is required to use it,
+      only the <code class="computeroutput"><span class="identifier">include</span><span class="special">/</span></code>
+      directory has to be added to the compiler include search path.
     </p>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="double_ended.build_and_test.build_the_tests"></a><a class="link" href="build_and_test.html#double_ended.build_and_test.build_the_tests" title="Build the tests">Build the
+      tests</a>
+</h3></div></div></div>
+<p>
+        Although it is not required to use the library, the tests can be build separately.
+        A <code class="computeroutput"><span class="identifier">Boost</span></code> tree is needed (version
+        1.59 or above), with at least <code class="computeroutput"><span class="identifier">bjam</span></code>
+        and <code class="computeroutput"><span class="identifier">Boost</span><span class="special">.</span><span class="identifier">Serialization</span></code> library installed. However,
+        it's not required to use the <code class="computeroutput"><span class="identifier">Boost</span></code>
+        installation provided by the operating system or distribution. To avoid conflicting
+        with such installs, <code class="computeroutput"><span class="identifier">BOOST_BUILD_PATH</span></code>
+        can be explicitly specified:
+      </p>
+<pre class="programlisting"><span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="keyword">export</span> <span class="identifier">BOOST_BUILD_PATH</span><span class="special">=/</span><span class="identifier">path</span><span class="special">/</span><span class="identifier">to</span><span class="special">/</span><span class="identifier">boost</span>  <span class="special">#</span> <span class="identifier">contains</span> <span class="identifier">bjam</span> <span class="identifier">tool</span><span class="special">,</span> <span class="identifier">boost</span> <span class="keyword">and</span> <span class="identifier">stage</span> <span class="identifier">libraries</span>
+<span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span>
+</pre>
+<p>
+        The last command executed, the tests are compiled and executed. During compilation,
+        no warning should be emitted and each test should pass, indicated by the
+        <code class="computeroutput"><span class="special">**</span><span class="identifier">passed</span><span class="special">**</span></code> string on the output. To change the used
+        compiler, specify the toolchain switch:
+      </p>
+<pre class="programlisting"><span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span> <span class="identifier">toolset</span><span class="special">=</span><span class="identifier">gcc</span> <span class="special">#</span> <span class="keyword">or</span> <span class="identifier">clang</span> <span class="keyword">or</span> <span class="identifier">msvc</span>
+</pre>
+<p>
+        To build the tests in release mode, use the <code class="computeroutput"><span class="identifier">release</span></code>
+        variant:
+      </p>
+<pre class="programlisting"><span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span> <span class="identifier">variant</span><span class="special">=</span><span class="identifier">release</span>
+</pre>
+<p>
+        On platforms where the <a href="https://github.com/google/sanitizers/wiki" target="_top">address
+        sanitizer</a> is supported, the <code class="computeroutput"><span class="identifier">sanitize</span></code>
+        variant can be used to look for memory related errors:
+      </p>
+<pre class="programlisting"><span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span> <span class="identifier">variant</span><span class="special">=</span><span class="identifier">sanitize</span>
+</pre>
+<p>
+        A test coverage report can be generated when the GCC toolchain is in use:
+      </p>
+<pre class="programlisting"><span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span> <span class="identifier">toolset</span><span class="special">=</span><span class="identifier">gcc</span> <span class="identifier">variant</span><span class="special">=</span><span class="identifier">coverage</span>
+<span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">test</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span> <span class="identifier">toolset</span><span class="special">=</span><span class="identifier">gcc</span> <span class="identifier">lcov</span>
+</pre>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="double_ended.build_and_test.build_the_documentation"></a><a class="link" href="build_and_test.html#double_ended.build_and_test.build_the_documentation" title="Build the documentation">Build
+      the documentation</a>
+</h3></div></div></div>
+<p>
+        To build the documentation (this one), run <code class="computeroutput"><span class="identifier">bjam</span></code>
+        in the <code class="computeroutput"><span class="identifier">doc</span><span class="special">/</span></code>
+        directory:
+      </p>
+<pre class="programlisting"><span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">doc</span> <span class="error">$</span> <span class="keyword">export</span> <span class="identifier">BOOST_BUILD_PATH</span><span class="special">=/</span><span class="identifier">path</span><span class="special">/</span><span class="identifier">to</span><span class="special">/</span><span class="identifier">boost</span>  <span class="special">#</span> <span class="identifier">contains</span> <span class="identifier">bjam</span> <span class="identifier">tool</span>
+<span class="identifier">double_ended</span><span class="special">/</span><span class="identifier">doc</span> <span class="error">$</span> <span class="error">$</span><span class="identifier">BOOST_BUILD_PATH</span><span class="special">/</span><span class="identifier">bjam</span>
+</pre>
+<p>
+        The toolchain requires the quickbook, boostbook and doxygen tools to be
+        <a href="http://www.boost.org/build/doc/html/bbv2/reference/tools.html#idp88891216" target="_top">properly
+        configured</a>.
+      </p>
+</div>
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
 <td align="left"></td>
-<td align="right"><div class="copyright-footer">Copyright &#169; 2015 Benedek Thaler<p>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2015, 2016 Benedek Thaler<p>
         Boost Software License, Version 1.0.
       </p>
 </div></td>
 </tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="../boost/double_ended/unsafe_uninitialized_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a>
+<a accesskey="p" href="../boost/double_ended/unsafe_uninitialized_tag.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/home.png" alt="Home"></a><a accesskey="n" href="acknowledgements.html"><img src="http://www.boost.org/doc/libs/common/doc/src/images/next.png" alt="Next"></a>
 </div>
 </body>
 </html>
