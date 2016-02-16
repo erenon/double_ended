@@ -37,16 +37,17 @@ matrix:
           packages:
             - g++-5
 
+    # Disabled because of: https://github.com/travis-ci/travis-ci/issues/5624
     # Clang 3.5
-    - env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang VARIANT=release
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test # depends on libstdc++
-            - llvm-toolchain-precise-3.5
-          packages:
-            - clang-3.5
+    #- env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang VARIANT=release
+    #  os: linux
+    #  addons:
+    #    apt:
+    #      sources:
+    #        - ubuntu-toolchain-r-test # depends on libstdc++
+    #        - llvm-toolchain-precise-3.5
+    #      packages:
+    #        - clang-3.5
 
     # Clang 3.7
     - env: CXX=clang++-3.7 CXX_PATH=/usr/bin/clang++-3.7 CXX_NAME=clang VARIANT=release
