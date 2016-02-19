@@ -20,7 +20,7 @@
 
 #if defined __GNUC__
   #include <x86intrin.h> // __rdtsc
-#elif defined _MSVC_VER
+#elif defined _MSC_VER
   #include <intrin.h> // __rdtsc
 #endif
 
@@ -45,7 +45,7 @@ inline void pin_thread()
   {
     std::cerr << "Failed to pin thread: " << strerror(errno) << "\n";
   }
-#elif defined _MSVC_VER
+#elif defined _MSC_VER
   auto ok = SetThreadAffinityMask(GetCurrentThread(), 1);
   if (! ok)
   {
