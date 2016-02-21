@@ -19,17 +19,56 @@ namespace serialization {
 
 using double_ended::batch_deque;
 
+template <typename A>
+using de_alloc_traits = double_ended::detail::allocator_traits<A>;
+
 template <typename Archive, typename T, typename BDP, typename A>
 void save(Archive& ar, const batch_deque<T, BDP, A>& c, unsigned /*version*/)
 {
   auto size = c.size();
   ar << size;
 
-  for (const T& t : c)
+  if (de_alloc_traits<A>::t_is_trivially_copyable)
   {
-    ar << t;
+    auto first = c.segment_begin();
+    const auto last = c.segment_end();
+    for (; first != last; ++first)
+    {
+      ar.save_binary(first.data(), first.data_size() * sizeof(T));
+    }
+  }
+  else
+  {
+    for (const T& t : c)
+    {
+      ar << t;
+    }
   }
 }
+
+namespace double_ended_detail {
+
+template <typename Archive, typename T, typename BDP, typename A>
+void load_trivial(Archive& ar, batch_deque<T, BDP, A>& c)
+{
+  auto first = c.segment_begin();
+  const auto last = c.segment_end();
+  for (; first != last; ++first)
+  {
+    ar.load_binary(first.data(), first.data_size() * sizeof(T));
+  }
+}
+
+template <typename Archive, typename T, typename BDP, typename A>
+void load_non_trivial(Archive& ar, batch_deque<T, BDP, A>& c)
+{
+  for (T& t : c)
+  {
+    ar >> t;
+  }
+}
+
+} // namespace double_ended_detail
 
 template <typename Archive, typename T, typename BDP, typename A>
 void load(Archive& ar, batch_deque<T, BDP, A>& c, unsigned /*version*/)
@@ -40,23 +79,17 @@ void load(Archive& ar, batch_deque<T, BDP, A>& c, unsigned /*version*/)
   size_type new_size;
   ar >> new_size;
 
-  const bool fits = c.capacity() >= new_size;
+  const size_type to_front = (std::min)(c.front_free_capacity() + c.size(), new_size);
+  c.resize_front(to_front);
+  c.resize_back(new_size - to_front + c.size());
 
-  if (fits)
+  if (de_alloc_traits<A>::t_is_trivially_copyable)
   {
-    const size_type to_front = (std::min)(c.front_free_capacity() + c.size(), new_size);
-    c.resize_front(to_front);
-    c.resize_back(new_size - to_front + c.size());
+    double_ended_detail::load_trivial(ar, c);
   }
   else
   {
-    c.clear();
-    c.resize(new_size);
-  }
-
-  for (T& t : c)
-  {
-    ar >> t;
+    double_ended_detail::load_non_trivial(ar, c);
   }
 }
 
