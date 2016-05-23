@@ -948,9 +948,9 @@ public:
    */
   size_type max_size() const noexcept
   {
-	auto alloc_max = allocator_traits::max_size(get_allocator_ref());
-	auto size_type_max = (std::numeric_limits<size_type>::max)();
-	return (alloc_max <= size_type_max) ? size_type(alloc_max) : size_type_max;
+    auto alloc_max = allocator_traits::max_size(get_allocator_ref());
+    auto size_type_max = (std::numeric_limits<size_type>::max)();
+    return (alloc_max <= size_type_max) ? size_type(alloc_max) : size_type_max;
   }
 
   /**
