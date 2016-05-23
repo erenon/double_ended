@@ -90,9 +90,10 @@ install:
   - export BOOST_BUILD_PATH=${BOOST_ROOT}
 
   # Setup Boost.Build
+  - echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > ${HOME}/user-config.jam
   - cd ${BOOST_ROOT}
   - ./bootstrap.sh --with-libraries=serialization # build b2
-  - ./b2 address-model=${ARCH} -j4  # build libraries
+  - ./b2 toolset=${CXX_NAME} address-model=${ARCH} -j4  # build libraries
   - export PATH=${BOOST_ROOT}:${PATH}
 
   - cd ${TRAVIS_BUILD_DIR}
