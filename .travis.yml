@@ -101,7 +101,6 @@ install:
 
 script:
   - |
-    echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > project-config.jam
     cd test
     b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} -j2
 
