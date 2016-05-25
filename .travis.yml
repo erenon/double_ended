@@ -47,6 +47,7 @@ matrix:
           packages:
             - g++-5
             - g++-5-multilib
+            - linux-libc-dev:i386
 
     # Disabled because of: https://github.com/travis-ci/travis-ci/issues/5624
     # Clang 3.5
