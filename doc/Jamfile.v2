@@ -3,6 +3,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 using doxygen ;
+using auto-index ;
 
 import quickbook ;
 
@@ -34,4 +35,13 @@ boostbook standalone
   <xsl:param>boost.graphics.root=http://www.boost.org/doc/libs/common/doc/src/images/
   <xsl:param>boost.header.root=../../include
   <format>html
+
+  # Auto-index
+  <auto-index>on
+  <auto-index-verbose>on
+  <format>pdf:<auto-index-internal>off
+  <format>html:<auto-index-internal>on
+  <auto-index-script>index.idx
+  <auto-index-prefix>../
+  <quickbook-define>enable_index
 ;
