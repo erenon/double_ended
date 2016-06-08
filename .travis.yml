@@ -49,28 +49,9 @@ matrix:
             - g++-5-multilib
             - linux-libc-dev:i386
 
-    # Disabled because of: https://github.com/travis-ci/travis-ci/issues/5624
-    # Clang 3.5
-    #- env: CXX=clang++-3.5 CXX_PATH=/usr/bin/clang++-3.5 CXX_NAME=clang VARIANT=release
-    #  os: linux
-    #  addons:
-    #    apt:
-    #      sources:
-    #        - ubuntu-toolchain-r-test # depends on libstdc++
-    #        - llvm-toolchain-precise-3.5
-    #      packages:
-    #        - clang-3.5
-
-    # Clang 3.7
-    - env: CXX=clang++-3.7 CXX_PATH=/usr/bin/clang++-3.7 CXX_NAME=clang VARIANT=release ARCH=64
+    # Clang 3.8
+    - env: CXX=clang++ CXX_NAME=clang LLVM_VERSION=3.8.0 VARIANT=release ARCH=64
       os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test # depends on libstdc++
-            - llvm-toolchain-precise-3.7
-          packages:
-            - clang-3.7
 
     # Xcode 6.4
     - env: CXX=clang++ CXX_PATH=clang++ CXX_NAME=clang VARIANT=release ARCH=64
@@ -81,27 +62,45 @@ matrix:
     - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
 
 install:
-  - |
-    DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-    mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+  - B2FLAGS=''
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
 
-    # Install Boost
+  # install clang if needed
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX_NAME}" == "clang" ]]; then
+      mkdir -p ${DEPS_DIR}/clang
+
+      LLVM_URL=http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+      travis_retry wget --quiet -O - ${LLVM_URL} | tar --strip-components=1 -xf -C clang/
+
+      CXX_PATH=${DEPS_DIR}/clang/bin/clang++
+      B2FLAGS+=" cxxflags=-isystem${DEPS_DIR}/clang/include/c++/v1"
+      B2FLAGS+=" linkflags=-L${DEPS_DIR}/clang/lib"
+      B2FLAGS+=" linkflags=-lc++"
+      B2FLAGS+=" linkflags=-lc++abi"
+      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/clang/lib"
+    fi
+
+  # Install Boost
+  - |
     BOOST_URL="http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.gz"
     mkdir boost && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C boost
     export BOOST_ROOT=${DEPS_DIR}/boost
     export BOOST_BUILD_PATH=${BOOST_ROOT}
 
-    # Setup Boost.Build
+  # Setup Boost.Build
+  - |
     echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > ${HOME}/user-config.jam
     cd ${BOOST_ROOT}
     ./bootstrap.sh --with-libraries=serialization # build b2
     ./b2 toolset=${CXX_NAME} address-model=${ARCH} -j4  # build libraries
     export PATH=${BOOST_ROOT}:${PATH}
 
-    cd ${TRAVIS_BUILD_DIR}
+  - cd ${TRAVIS_BUILD_DIR}
 
 script:
   - |
     cd test
-    b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} architecture=x86 -j2
+    b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} architecture=x86 -j2 ${B2FLAGS}
 
