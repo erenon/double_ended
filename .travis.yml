@@ -57,16 +57,22 @@ matrix:
   exclude:
     - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
 
+cache:
+  directories:
+    - deps
+
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
 
   # Install Boost
   - |
-    BOOST_URL="http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.gz"
-    mkdir boost && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C boost
-    export BOOST_ROOT=${DEPS_DIR}/boost
-    export BOOST_BUILD_PATH=${BOOST_ROOT}
+    if [ ! -d boost ]; then
+      BOOST_URL="http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.gz"
+      mkdir boost && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C boost
+      export BOOST_ROOT=${DEPS_DIR}/boost
+      export BOOST_BUILD_PATH=${BOOST_ROOT}
+    fi
 
   # Setup Boost.Build
   - |
