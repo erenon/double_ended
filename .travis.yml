@@ -93,7 +93,7 @@ install:
     echo "using ${CXX_NAME} : : ${CXX_PATH} ;" > ${HOME}/user-config.jam
     cd ${BOOST_ROOT}
     ./bootstrap.sh --with-libraries=serialization # build b2
-    ./b2 toolset=${CXX_NAME} address-model=${ARCH} -j4  # build libraries
+    ./b2 toolset=${CXX_NAME} address-model=${ARCH} -j4 ${B2FLAGS} # build libraries
     export PATH=${BOOST_ROOT}:${PATH}
 
   - cd ${TRAVIS_BUILD_DIR}
