@@ -127,6 +127,7 @@ rule bench_compile
      $(toolset)
      <conditional>@link_asan
      <threading>multi
+     <toolset>gcc:<cxxflags>-march=native
   ] ;
 
   return $(rules) ;

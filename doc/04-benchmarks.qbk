@@ -6,27 +6,62 @@
 
 [section Benchmarks]
 
-[warning The diagrams below show unexpected results. They should not be considered correct until peer-reviewed.]
+Benchmarking a small piece of generic code such as this library is challenging because
+no benchmark can represent every actual use-case. What looks good on paper might
+perform poorly in practice, and vice-versa. Neither the comparison similar solutions is trivial.
+It is obvious, that `devector` excels if it can take advantage of its small buffer optimization.
+However, comparing a small buffer enabled `devector` to a standard vector is just measuring
+the performance of the memory allocator.
 
-The first test compares the performance of the `push_back()` method on equal terms.
-The value type is `unsigned`, a primitive type. In case of the vectors, the necessary
-memory is preallocated and pre-faulted. On the first diagram, `boost::container::vector`
-and `devector` show very similar characteristics, and the latter shadows the former.
+It was tried to compare equivalent functionality of different containers, but the
+measurement gave surprising results.
+[footnote See [@http://lists.boost.org/Archives/boost/2016/02/227743.php What's wrong with this benchmark] mail thread]
 
-[$bench/vector_push_back.png [align center]]
+Instead of disclosing those unreliable performance numbers, the actual compiled code is presented here,
+to prove that the quality of the generated code matches the equivalent standard implementations.
+Below, a loop is shown, pushing back a constant value into a `std::vector`/`devector`.
+The code is compiled using GCC 5.2 with `-O2 -march=native` on a AMD FX 8320 processor.
 
-Deques has to allocate memory on demand, because `std::deque` has
-no `reserve` method.
-
-[$bench/deque_push_back.png [align center]]
-
-The benchmarks ware produced on a machine equipped with an AMD FX 8320 (3.5 GHz) processor
-and 16 GiB of RAM memory (1600 MHz), running Linux 3.13, with CPU scaling disabled. The
-benchmark process was pinned to dedicated core, which was isolated from the operating systems
-schedulers pool (using the `isolcpus` boot flag). The benchmark program was compiled by
-GCC 5.3, using the `-O2` flag.
-
-The actual Time Stamp Counter values are not directly comparable to other values
-produced on different machines.
+[table:push_back_code Assembly code of v.push_back(1) loop
+    [[std::vector] [devector]]
+    [
+    [
+[pre
+`
+  0: test   %rax,%rax
+     je     <1>
+     movl   $0x1,(%rax)
+  1: add    $0x4,%rax
+     mov    %rax,0x68(%rsp)
+     inc    %rbx
+     cmp    %rbp,%rbx
+     jae    <reallocate>
+     mov    0x68(%rsp),%rax
+     movl   $0x1,0x3c(%rsp)
+     cmp    0x70(%rsp),%rax
+     jne    <0>
+`
+]
+    ]
+    [
+[pre
+`
+  0: mov    %ebx,%eax
+     lea    (%r14,%rax,4),%rax
+     test   %rax,%rax
+     je     <1>
+     movl   $0x1,(%rax)
+  1: inc    %ebx
+     inc    %r13
+     mov    %ebx,0xb4(%rsp)
+     cmp    0x8(%rsp),%r13
+     jae    <reallocate>
+     cmp    %ebx,%r12d
+     jne    <0>
+`
+]
+    ]
+    ]
+]
 
 [endsect]
