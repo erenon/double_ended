@@ -17,45 +17,90 @@
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
 <a name="double_ended.benchmarks"></a><a class="link" href="benchmarks.html" title="Benchmarks">Benchmarks</a>
 </h2></div></div></div>
-<div class="warning"><table border="0" summary="Warning">
-<tr>
-<td rowspan="2" align="center" valign="top" width="25"><img alt="[Warning]" src="http://www.boost.org/doc/libs/common/doc/src/images/warning.png"></td>
-<th align="left">Warning</th>
-</tr>
-<tr><td align="left" valign="top"><p>
-        The diagrams below show unexpected results. They should not be considered
-        correct until peer-reviewed.
-      </p></td></tr>
+<p>
+      Benchmarking a small piece of generic code such as this library is challenging
+      because no benchmark can represent every actual use-case. What looks good on
+      paper might perform poorly in practice, and vice-versa. Neither the comparison
+      similar solutions is trivial. It is obvious, that <code class="computeroutput"><span class="identifier">devector</span></code>
+      excels if it can take advantage of its small buffer optimization. However,
+      comparing a small buffer enabled <code class="computeroutput"><span class="identifier">devector</span></code>
+      to a standard vector is just measuring the performance of the memory allocator.
+    </p>
+<p>
+      It was tried to compare equivalent functionality of different containers, but
+      the measurement gave surprising results. <a href="#ftn.double_ended.benchmarks.f0" class="footnote" name="double_ended.benchmarks.f0"><sup class="footnote">[1]</sup></a>
+    </p>
+<p>
+      Instead of disclosing those unreliable performance numbers, the actual compiled
+      code is presented here, to prove that the quality of the generated code matches
+      the equivalent standard implementations. Below, a loop is shown, pushing back
+      a constant value into a <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span></code>/<code class="computeroutput"><span class="identifier">devector</span></code>. The code is compiled using GCC
+      5.2 with <code class="computeroutput"><span class="special">-</span><span class="identifier">O2</span></code>.
+    </p>
+<div class="table">
+<a name="double_ended.benchmarks.push_back_code"></a><p class="title"><b>Table&#160;1.1.&#160;Assembly code of v.push_back(1) loop</b></p>
+<div class="table-contents"><table class="table" summary="Assembly code of v.push_back(1) loop">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+              <p>
+                std::vector
+              </p>
+            </th>
+<th>
+              <p>
+                devector
+              </p>
+            </th>
+</tr></thead>
+<tbody><tr>
+<td>
+<pre class="programlisting"><code class="computeroutput">
+  <span class="number">0</span><span class="special">:</span> <span class="identifier">test</span>   <span class="special">%</span><span class="identifier">rax</span><span class="special">,%</span><span class="identifier">rax</span>
+     <span class="identifier">je</span>     <span class="special">&lt;</span><span class="number">1</span><span class="special">&gt;</span>
+     <span class="identifier">movl</span>   <span class="error">$</span><span class="number">0x1</span><span class="special">,(%</span><span class="identifier">rax</span><span class="special">)</span>
+  <span class="number">1</span><span class="special">:</span> <span class="identifier">add</span>    <span class="error">$</span><span class="number">0x4</span><span class="special">,%</span><span class="identifier">rax</span>
+     <span class="identifier">mov</span>    <span class="special">%</span><span class="identifier">rax</span><span class="special">,</span><span class="number">0x68</span><span class="special">(%</span><span class="identifier">rsp</span><span class="special">)</span>
+     <span class="identifier">inc</span>    <span class="special">%</span><span class="identifier">rbx</span>
+     <span class="identifier">cmp</span>    <span class="special">%</span><span class="identifier">rbp</span><span class="special">,%</span><span class="identifier">rbx</span>
+     <span class="identifier">jae</span>    <span class="special">&lt;</span><span class="identifier">reallocate</span><span class="special">&gt;</span>
+     <span class="identifier">mov</span>    <span class="number">0x68</span><span class="special">(%</span><span class="identifier">rsp</span><span class="special">),%</span><span class="identifier">rax</span>
+     <span class="identifier">movl</span>   <span class="error">$</span><span class="number">0x1</span><span class="special">,</span><span class="number">0x3c</span><span class="special">(%</span><span class="identifier">rsp</span><span class="special">)</span>
+     <span class="identifier">cmp</span>    <span class="number">0x70</span><span class="special">(%</span><span class="identifier">rsp</span><span class="special">),%</span><span class="identifier">rax</span>
+     <span class="identifier">jne</span>    <span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;</span>
+</code>
+</pre>
+            </td>
+<td>
+<pre class="programlisting"><code class="computeroutput">
+  <span class="number">0</span><span class="special">:</span> <span class="identifier">mov</span>    <span class="special">%</span><span class="identifier">ebx</span><span class="special">,%</span><span class="identifier">eax</span>
+     <span class="identifier">lea</span>    <span class="special">(%</span><span class="identifier">r14</span><span class="special">,%</span><span class="identifier">rax</span><span class="special">,</span><span class="number">4</span><span class="special">),%</span><span class="identifier">rax</span>
+     <span class="identifier">test</span>   <span class="special">%</span><span class="identifier">rax</span><span class="special">,%</span><span class="identifier">rax</span>
+     <span class="identifier">je</span>     <span class="special">&lt;</span><span class="number">1</span><span class="special">&gt;</span>
+     <span class="identifier">movl</span>   <span class="error">$</span><span class="number">0x1</span><span class="special">,(%</span><span class="identifier">rax</span><span class="special">)</span>
+  <span class="number">1</span><span class="special">:</span> <span class="identifier">inc</span>    <span class="special">%</span><span class="identifier">ebx</span>
+     <span class="identifier">inc</span>    <span class="special">%</span><span class="identifier">r13</span>
+     <span class="identifier">mov</span>    <span class="special">%</span><span class="identifier">ebx</span><span class="special">,</span><span class="number">0xb4</span><span class="special">(%</span><span class="identifier">rsp</span><span class="special">)</span>
+     <span class="identifier">cmp</span>    <span class="number">0x8</span><span class="special">(%</span><span class="identifier">rsp</span><span class="special">),%</span><span class="identifier">r13</span>
+     <span class="identifier">jae</span>    <span class="special">&lt;</span><span class="identifier">reallocate</span><span class="special">&gt;</span>
+     <span class="identifier">cmp</span>    <span class="special">%</span><span class="identifier">ebx</span><span class="special">,%</span><span class="identifier">r12d</span>
+     <span class="identifier">jne</span>    <span class="special">&lt;</span><span class="number">0</span><span class="special">&gt;</span>
+</code>
+</pre>
+            </td>
+</tr></tbody>
 </table></div>
-<p>
-      The first test compares the performance of the <code class="computeroutput"><span class="identifier">push_back</span><span class="special">()</span></code> method on equal terms. The value type is
-      <code class="computeroutput"><span class="keyword">unsigned</span></code>, a primitive type. In
-      case of the vectors, the necessary memory is preallocated and pre-faulted.
-      On the first diagram, <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">container</span><span class="special">::</span><span class="identifier">vector</span></code>
-      and <code class="computeroutput"><span class="identifier">devector</span></code> show very similar
-      characteristics, and the latter shadows the former.
-    </p>
-<p>
-      <span class="inlinemediaobject"><img src="../bench/vector_push_back.png" align="middle"></span>
-    </p>
-<p>
-      Deques has to allocate memory on demand, because <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">deque</span></code> has
-      no <code class="computeroutput"><span class="identifier">reserve</span></code> method.
-    </p>
-<p>
-      <span class="inlinemediaobject"><img src="../bench/deque_push_back.png" align="middle"></span>
-    </p>
-<p>
-      The benchmarks ware produced on a machine equipped with an AMD FX 8320 (3.5
-      GHz) processor and 16 GiB of RAM memory (1600 MHz), running Linux 3.13, with
-      CPU scaling disabled. The benchmark process was pinned to dedicated core, which
-      was isolated from the operating systems schedulers pool (using the <code class="computeroutput"><span class="identifier">isolcpus</span></code> boot flag). The benchmark program
-      was compiled by GCC 5.3, using the <code class="computeroutput"><span class="special">-</span><span class="identifier">O2</span></code> flag.
-    </p>
-<p>
-      The actual Time Stamp Counter values are not directly comparable to other values
-      produced on different machines.
-    </p>
+</div>
+<br class="table-break"><div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.double_ended.benchmarks.f0" class="footnote"><p><a href="#double_ended.benchmarks.f0" class="para"><sup class="para">[1] </sup></a>
+        See <a href="http://lists.boost.org/Archives/boost/2016/02/227743.php" target="_top">What's
+        wrong with this benchmark</a> mail thread
+      </p></div>
+</div>
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
 <td align="left"></td>
