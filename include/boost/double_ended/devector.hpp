@@ -511,6 +511,9 @@ public:
       // elems must be moved/copied to small buffer
       opt_move_or_copy(rhs.begin(), rhs.end(), begin());
     }
+
+    BOOST_ASSERT(    invariants_ok());
+    BOOST_ASSERT(rhs.invariants_ok());
   }
 
   /**
