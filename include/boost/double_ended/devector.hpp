@@ -1011,28 +1011,7 @@ public:
    */
   void resize_front(size_type sz)
   {
-    if (sz > size())
-    {
-      const size_type n = sz - size();
-
-      if (sz < front_capacity())
-      {
-        construct_n(_buffer + _front_index - n, n);
-        _front_index -= n;
-      }
-      else
-      {
-        resize_front_slow_path(sz, n);
-      }
-    }
-    else
-    {
-      while (size() > sz)
-      {
-        pop_front();
-      }
-    }
-
+    resize_front_impl(sz);
     BOOST_ASSERT(invariants_ok());
   }
 
@@ -1055,28 +1034,7 @@ public:
    */
   void resize_front(size_type sz, const T& c)
   {
-    if (sz > size())
-    {
-      const size_type n = sz - size();
-
-      if (sz < front_capacity())
-      {
-        construct_n(_buffer + _front_index - n, n, c);
-        _front_index -= n;
-      }
-      else
-      {
-        resize_front_slow_path(sz, n, c);
-      }
-    }
-    else
-    {
-      while (size() > sz)
-      {
-        pop_front();
-      }
-    }
-
+    resize_front_impl(sz, c);
     BOOST_ASSERT(invariants_ok());
   }
 
@@ -1100,28 +1058,7 @@ public:
    */
   void resize_back(size_type sz)
   {
-    if (sz > size())
-    {
-      const size_type n = sz - size();
-
-      if (sz < back_capacity())
-      {
-        construct_n(_buffer + _back_index, n);
-        _back_index += n;
-      }
-      else
-      {
-        resize_back_slow_path(sz, n);
-      }
-    }
-    else
-    {
-      while (size() > sz)
-      {
-        pop_back();
-      }
-    }
-
+    resize_back_impl(sz);
     BOOST_ASSERT(invariants_ok());
   }
 
@@ -1143,28 +1080,7 @@ public:
    */
   void resize_back(size_type sz, const T& c)
   {
-    if (sz > size())
-    {
-      const size_type n = sz - size();
-
-      if (sz < back_capacity())
-      {
-        construct_n(_buffer + _back_index, n, c);
-        _back_index += n;
-      }
-      else
-      {
-        resize_back_slow_path(sz, n, c);
-      }
-    }
-    else
-    {
-      while (size() > sz)
-      {
-        pop_back();
-      }
-    }
-
+    resize_back_impl(sz, c);
     BOOST_ASSERT(invariants_ok());
   }
 
@@ -2290,6 +2206,32 @@ private:
   }
 
   template <typename... Args>
+  void resize_front_impl(size_type sz, Args&&... args)
+  {
+    if (sz > size())
+    {
+      const size_type n = sz - size();
+
+      if (sz <= front_capacity())
+      {
+        construct_n(_buffer + _front_index - n, n, std::forward<Args>(args)...);
+        _front_index -= n;
+      }
+      else
+      {
+        resize_front_slow_path(sz, n, std::forward<Args>(args)...);
+      }
+    }
+    else
+    {
+      while (size() > sz)
+      {
+        pop_front();
+      }
+    }
+  }
+
+  template <typename... Args>
   void resize_front_slow_path(size_type sz, size_type n, Args&&... args)
   {
     const size_type new_capacity = calculate_new_capacity(sz + back_free_capacity());
@@ -2312,6 +2254,32 @@ private:
 
     _back_index = new_old_elem_index + _back_index - _front_index;
     _front_index = new_elem_index;
+  }
+
+  template <typename... Args>
+  void resize_back_impl(size_type sz, Args&&... args)
+  {
+    if (sz > size())
+    {
+      const size_type n = sz - size();
+
+      if (sz <= back_capacity())
+      {
+        construct_n(_buffer + _back_index, n, std::forward<Args>(args)...);
+        _back_index += n;
+      }
+      else
+      {
+        resize_back_slow_path(sz, n, std::forward<Args>(args)...);
+      }
+    }
+    else
+    {
+      while (size() > sz)
+      {
+        pop_back();
+      }
+    }
   }
 
   template <typename... Args>
