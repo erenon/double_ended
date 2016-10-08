@@ -87,5 +87,5 @@ install:
 script:
   - |
     cd test
-    b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} architecture=x86 -j2
+    ${BOOST_ROOT}/b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} architecture=x86 -j2
 
