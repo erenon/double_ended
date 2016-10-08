@@ -70,9 +70,10 @@ install:
     if [ ! -d boost ]; then
       BOOST_URL="http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.gz"
       mkdir boost && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C boost
-      export BOOST_ROOT=${DEPS_DIR}/boost
-      export BOOST_BUILD_PATH=${BOOST_ROOT}
     fi
+
+  - export BOOST_ROOT=${DEPS_DIR}/boost
+  - export BOOST_BUILD_PATH=${BOOST_ROOT}
 
   # Setup Boost.Build
   - |
@@ -85,7 +86,6 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 script:
-  - |
-    cd test
-    ${BOOST_ROOT}/b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} architecture=x86 -j2
+  - cd test
+  - ${BOOST_ROOT}/b2 toolset=${CXX_NAME} variant=${VARIANT} address-model=${ARCH} architecture=x86 -j2
 
