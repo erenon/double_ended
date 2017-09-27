@@ -2860,27 +2860,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 {
   using T = typename Devector::value_type;
 
-  std::vector<T> x{T(9), T(9), T(9), T(9), T(9)};
+  std::vector<T> x{T(9), T(10), T(11), T(12), T(13)};
   auto xb = x.begin();
 
   {
     Devector a;
     auto ret = a.insert(a.end(), xb, xb+5);
-    test_equal_range(a, {9, 9, 9, 9, 9});
+    test_equal_range(a, {9, 10, 11, 12, 13});
     BOOST_TEST(ret == a.begin());
   }
 
   {
     Devector b = get_range<Devector>(8);
     auto ret = b.insert(b.begin(), xb, xb+3);
-    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
+    test_equal_range(b, {9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
   }
 
   {
     Devector c = get_range<Devector>(8);
     auto ret = c.insert(c.end(), xb, xb+3);
-    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
     BOOST_TEST(ret == c.begin() + 8);
   }
 
@@ -2894,7 +2894,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
     auto origi_end = d.end();
     auto ret = d.insert(d.begin(), xb, xb+3);
 
-    test_equal_range(d, {9, 9, 9, 4, 5, 6, 7, 8});
+    test_equal_range(d, {9, 10, 11, 4, 5, 6, 7, 8});
     BOOST_TEST(origi_end == d.end());
     BOOST_TEST(ret == d.begin());
   }
@@ -2909,7 +2909,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
     auto origi_begin = e.begin();
     auto ret = e.insert(e.end(), xb, xb+3);
 
-    test_equal_range(e, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(e, {1, 2, 3, 4, 5, 9, 10, 11});
     BOOST_TEST(origi_begin == e.begin());
     BOOST_TEST(ret == e.begin() + 5);
   }
@@ -2925,7 +2925,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 
     auto ret = f.insert(f.begin() + 2, xb, xb+4);
 
-    test_equal_range(f, {3, 4, 9, 9, 9, 9, 5, 6});
+    test_equal_range(f, {3, 4, 9, 10, 11, 12, 5, 6});
     BOOST_TEST(f.capacity_alloc_count == 0u);
     BOOST_TEST(ret == f.begin() + 2);
   }
@@ -2942,7 +2942,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 
     auto ret = g.insert(g.begin() + 2, xb, xb+5);
 
-    test_equal_range(g, {3, 4, 9, 9, 9, 9, 9, 5});
+    test_equal_range(g, {3, 4, 9, 10, 11, 12, 13, 5});
     BOOST_TEST(g.capacity_alloc_count == 0u);
     BOOST_TEST(ret == g.begin() + 2);
   }
@@ -2952,7 +2952,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_range, Devector, t_is_copy_constructib
 
     auto ret = g.insert(g.begin() + 2, xb, xb+5);
 
-    test_equal_range(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
+    test_equal_range(g, {1, 2, 9, 10, 11, 12, 13, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == g.begin() + 2);
   }
 
@@ -3001,22 +3001,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
 
   {
     Devector a;
-    auto ret = a.insert(a.end(), {T(123), T(123), T(123), T(123), T(123)});
-    test_equal_range(a, {123, 123, 123, 123, 123});
+    auto ret = a.insert(a.end(), {T(123), T(124), T(125), T(126), T(127)});
+    test_equal_range(a, {123, 124, 125, 126, 127});
     BOOST_TEST(ret == a.begin());
   }
 
   {
     Devector b = get_range<Devector>(8);
-    auto ret = b.insert(b.begin(), {T(9), T(9), T(9)});
-    test_equal_range(b, {9, 9, 9, 1, 2, 3, 4, 5, 6, 7, 8});
+    auto ret = b.insert(b.begin(), {T(9), T(10), T(11)});
+    test_equal_range(b, {9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == b.begin());
   }
 
   {
     Devector c = get_range<Devector>(8);
-    auto ret = c.insert(c.end(), {T(9), T(9), T(9)});
-    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9});
+    auto ret = c.insert(c.end(), {T(9), T(10), T(11)});
+    test_equal_range(c, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
     BOOST_TEST(ret == c.begin() + 8);
   }
 
@@ -3028,9 +3028,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
     d.pop_front();
 
     auto origi_end = d.end();
-    auto ret = d.insert(d.begin(), {T(9), T(9), T(9)});
+    auto ret = d.insert(d.begin(), {T(9), T(10), T(11)});
 
-    test_equal_range(d, {9, 9, 9, 4, 5, 6, 7, 8});
+    test_equal_range(d, {9, 10, 11, 4, 5, 6, 7, 8});
     BOOST_TEST(origi_end == d.end());
     BOOST_TEST(ret == d.begin());
   }
@@ -3043,9 +3043,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
     e.pop_back();
 
     auto origi_begin = e.begin();
-    auto ret = e.insert(e.end(), {T(9), T(9), T(9)});
+    auto ret = e.insert(e.end(), {T(9), T(10), T(11)});
 
-    test_equal_range(e, {1, 2, 3, 4, 5, 9, 9, 9});
+    test_equal_range(e, {1, 2, 3, 4, 5, 9, 10, 11});
     BOOST_TEST(origi_begin == e.begin());
     BOOST_TEST(ret == e.begin() + 5);
   }
@@ -3059,9 +3059,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
     f.pop_back();
     f.pop_back();
 
-    auto ret = f.insert(f.begin() + 2, {T(9), T(9), T(9), T(9)});
+    auto ret = f.insert(f.begin() + 2, {T(9), T(10), T(11), T(12)});
 
-    test_equal_range(f, {3, 4, 9, 9, 9, 9, 5, 6});
+    test_equal_range(f, {3, 4, 9, 10, 11, 12, 5, 6});
     BOOST_TEST(f.capacity_alloc_count == 0u);
     BOOST_TEST(ret == f.begin() + 2);
   }
@@ -3076,9 +3076,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
     g.pop_back();
     g.pop_back();
 
-    auto ret = g.insert(g.begin() + 2, {T(9), T(9), T(9), T(9), T(9)});
+    auto ret = g.insert(g.begin() + 2, {T(9), T(10), T(11), T(12), T(13)});
 
-    test_equal_range(g, {3, 4, 9, 9, 9, 9, 9, 5});
+    test_equal_range(g, {3, 4, 9, 10, 11, 12, 13, 5});
     BOOST_TEST(g.capacity_alloc_count == 0u);
     BOOST_TEST(ret == g.begin() + 2);
   }
@@ -3086,9 +3086,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_insert_init_list, Devector, t_is_copy_constru
   {
     Devector g = get_range<Devector>(8);
 
-    auto ret = g.insert(g.begin() + 2, {T(9), T(9), T(9), T(9), T(9)});
+    auto ret = g.insert(g.begin() + 2, {T(9), T(10), T(11), T(12), T(13)});
 
-    test_equal_range(g, {1, 2, 9, 9, 9, 9, 9, 3, 4, 5, 6, 7, 8});
+    test_equal_range(g, {1, 2, 9, 10, 11, 12, 13, 3, 4, 5, 6, 7, 8});
     BOOST_TEST(ret == g.begin() + 2);
   }
 

@@ -2495,10 +2495,7 @@ private:
     }
     else if (position == begin() && front_free_capacity() >= n) // secondary fast path
     {
-      for (; first != last; ++first)
-      {
-        unsafe_push_front(*first);
-      }
+      insert_range_slow_path_near_front(begin(), first, n);
       return begin();
     }
     else
@@ -2513,26 +2510,14 @@ private:
     size_type n = std::distance(first, last);
     size_type index = position - begin();
 
-    // prefer moving front to access memory forward if there are less elems to move
-    const bool prefer_move_front = 2 * index <= size();
-
     if (front_free_capacity() + back_free_capacity() >= n)
     {
       // if we move enough, it can be done without reallocation
 
       iterator middle = begin() + index;
-
-      if (! prefer_move_front)
-      {
-        n -= insert_range_slow_path_near_back(middle, first, n);
-      }
+      n -= insert_range_slow_path_near_front(middle, first, n);
 
       if (n)
-      {
-        n -= insert_range_slow_path_near_front(middle, first, n);
-      }
-
-      if (n && prefer_move_front)
       {
         insert_range_slow_path_near_back(middle, first, n);
       }
@@ -2543,6 +2528,7 @@ private:
     }
     else
     {
+      const bool prefer_move_front = 2 * index <= size();
       return insert_range_reallocating_slow_path(prefer_move_front, index, first, n);
     }
   }
