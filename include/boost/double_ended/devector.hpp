@@ -2024,7 +2024,7 @@ public:
    * elements of the devector.
    *
    * **Postcondition**: `empty() && front_free_capacity() == 0
-   * && back_free_capacity() == small buffer size`.
+   * && back_free_capacity() == old capacity`.
    *
    * **Complexity**: Linear in the size of `*this`.
    *
