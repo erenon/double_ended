@@ -81,7 +81,7 @@ struct unsafe_uninitialized_tag {};
 
 /**
  * A vector-like sequence container providing front and back operations
- * (e.g: `push_front`/`pop_front`/`push_back`/`pop_back`) with amortized linear complexity,
+ * (e.g: `push_front`/`pop_front`/`push_back`/`pop_back`) with amortized constant complexity,
  * small buffer optimization and unsafe methods geared towards additional performance.
  *
  * Models the [SequenceContainer], [ReversibleContainer], and [AllocatorAwareContainer] concepts.
@@ -1402,7 +1402,7 @@ public:
    *
    * **Exceptions**: Strong exception guarantee.
    *
-   * **Complexity**: Amortized linear in the size of `*this`.
+   * **Complexity**: Amortized constant in the size of `*this`.
    * (Constant, if `front_free_capacity() > 0`)
    *
    * [EmplaceConstructible]: http://en.cppreference.com/w/cpp/concept/EmplaceConstructible
@@ -1435,7 +1435,7 @@ public:
    *
    * **Exceptions**: Strong exception guarantee.
    *
-   * **Complexity**: Amortized linear in the size of `*this`.
+   * **Complexity**: Amortized constant in the size of `*this`.
    * (Constant, if `front_free_capacity() > 0`)
    */
   void push_front(const T& x)
@@ -1454,7 +1454,7 @@ public:
    *
    * **Exceptions**: Strong exception guarantee, not regarding the state of `x`.
    *
-   * **Complexity**: Amortized linear in the size of `*this`.
+   * **Complexity**: Amortized constant in the size of `*this`.
    * (Constant, if `front_free_capacity() > 0`)
    */
   void push_front(T&& x)
@@ -1542,7 +1542,7 @@ public:
    *
    * **Exceptions**: Strong exception guarantee.
    *
-   * **Complexity**: Amortized linear in the size of `*this`.
+   * **Complexity**: Amortized constant in the size of `*this`.
    * (Constant, if `back_free_capacity() > 0`)
    *
    * [EmplaceConstructible]: http://en.cppreference.com/w/cpp/concept/EmplaceConstructible
@@ -1576,7 +1576,7 @@ public:
    *
    * **Exceptions**: Strong exception guarantee.
    *
-   * **Complexity**: Amortized linear in the size of `*this`.
+   * **Complexity**: Amortized constant in the size of `*this`.
    * (Constant, if `back_free_capacity() > 0`)
    */
   void push_back(const T& x)
@@ -1595,7 +1595,7 @@ public:
    *
    * **Exceptions**: Strong exception guarantee, not regarding the state of `x`.
    *
-   * **Complexity**: Amortized linear in the size of `*this`.
+   * **Complexity**: Amortized constant in the size of `*this`.
    * (Constant, if `back_free_capacity() > 0`)
    */
   void push_back(T&& x)
