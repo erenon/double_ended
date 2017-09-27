@@ -407,6 +407,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_destructor, Devector, all_devectors)
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible)
 {
   using T = typename Devector::value_type;
+  using PropagatesOnCopy = typename detail::allocator_traits<
+    typename Devector::allocator_type
+  >::propagate_on_container_copy_assignment;
+  const bool not_small = ! sbuffer_size<Devector>::value;
+  const typename Devector::size_type alloc_count =
+    PropagatesOnCopy::value && not_small ? 1u : 0u;
 
   { // assign to empty (maybe small)
     Devector a;
@@ -445,7 +451,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
     a = b;
 
     test_equal_range(a, {1, 2, 3, 4, 5, 6});
-    BOOST_TEST(a.capacity_alloc_count == 0u);
+    BOOST_TEST(a.capacity_alloc_count == alloc_count);
   }
 
   { // assignment overlaps contents
@@ -458,7 +464,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
     a = b;
 
     test_equal_range(a, {1, 2, 3, 4, 5, 6});
-    BOOST_TEST(a.capacity_alloc_count == 0u);
+    BOOST_TEST(a.capacity_alloc_count == alloc_count);
   }
 
   { // assignment exceeds contents
@@ -472,7 +478,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_assignment, Devector, t_is_copy_constructible
     a = b;
 
     test_equal_range(a, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
-    BOOST_TEST(a.capacity_alloc_count == 0u);
+    BOOST_TEST(a.capacity_alloc_count == alloc_count);
   }
 
   if (! std::is_nothrow_copy_constructible<T>::value)

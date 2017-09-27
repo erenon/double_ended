@@ -564,7 +564,11 @@ public:
     {
       if (get_allocator_ref() != x.get_allocator_ref())
       {
-        clear(); // new allocator cannot free existing storage
+        // new allocator cannot free existing storage
+        clear();
+        deallocate_buffer();
+        _storage._capacity = sbuffer_size;
+        _buffer = _storage.small_buffer_address();
       }
 
       get_allocator_ref() = x.get_allocator_ref();
