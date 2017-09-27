@@ -400,7 +400,7 @@ public:
 
     while (first != last)
     {
-      push_back(*first++);
+      emplace_back(*first++);
     }
 
     BOOST_ASSERT(invariants_ok());
@@ -720,7 +720,7 @@ public:
     overwrite_buffer_impl(first, last);
     while (first != last)
     {
-      push_back(*first++);
+      emplace_back(*first++);
     }
   }
 
