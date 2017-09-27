@@ -33,7 +33,7 @@ struct batch_deque_policy
    * **Remark**: Using a power of two increases performance
    * because of the cheaper division and modulo operations.
    */
-  static const std::size_t segment_size = SegmentSize;
+  static constexpr std::size_t segment_size = SegmentSize;
 };
 
 /**
