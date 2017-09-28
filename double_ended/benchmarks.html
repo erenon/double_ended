@@ -35,7 +35,9 @@
       code is presented here, to prove that the quality of the generated code matches
       the equivalent standard implementations. Below, a loop is shown, pushing back
       a constant value into a <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span></code>/<code class="computeroutput"><span class="identifier">devector</span></code>. The code is compiled using GCC
-      5.2 with <code class="computeroutput"><span class="special">-</span><span class="identifier">O2</span></code>.
+      5.2 with <code class="computeroutput"><span class="special">-</span><span class="identifier">O2</span>
+      <span class="special">-</span><span class="identifier">march</span><span class="special">=</span><span class="identifier">native</span></code> on
+      a AMD FX 8320 processor.
     </p>
 <div class="table">
 <a name="double_ended.benchmarks.push_back_code"></a><p class="title"><b>Table&#160;1.1.&#160;Assembly code of v.push_back(1) loop</b></p>

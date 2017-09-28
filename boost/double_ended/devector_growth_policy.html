@@ -27,16 +27,16 @@
   <span class="comment">// <a class="link" href="devector_growth_policy.html#boost.double_ended.devector_growth_policytypes">types</a></span>
   <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> <a class="link" href="devector_growth_policy.html#boost.double_ended.devector_growth_policy.size_type"><span class="identifier">size_type</span></a><span class="special">;</span>
 
-  <span class="comment">// <a class="link" href="devector_growth_policy.html#idp41335312-bb">public static functions</a></span>
-  <span class="keyword">static</span> <span class="identifier">size_type</span> <a class="link" href="devector_growth_policy.html#idp41335712-bb"><span class="identifier">new_capacity</span></a><span class="special">(</span><span class="identifier">size_type</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">static</span> <span class="keyword">bool</span> <a class="link" href="devector_growth_policy.html#idp41339552-bb"><span class="identifier">should_shrink</span></a><span class="special">(</span><span class="identifier">size_type</span><span class="special">,</span> <span class="identifier">size_type</span><span class="special">,</span> <span class="identifier">size_type</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="devector_growth_policy.html#idp24327232-bb">public static functions</a></span>
+  <span class="keyword">static</span> <span class="identifier">size_type</span> <a class="link" href="devector_growth_policy.html#idp24327632-bb"><span class="identifier">new_capacity</span></a><span class="special">(</span><span class="identifier">size_type</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">static</span> <span class="keyword">bool</span> <a class="link" href="devector_growth_policy.html#idp24331472-bb"><span class="identifier">should_shrink</span></a><span class="special">(</span><span class="identifier">size_type</span><span class="special">,</span> <span class="identifier">size_type</span><span class="special">,</span> <span class="identifier">size_type</span><span class="special">)</span><span class="special">;</span>
 <span class="special">}</span><span class="special">;</span></pre></div>
 <div class="refsect1">
-<a name="idp96001552"></a><h2>Description</h2>
+<a name="idp74810064"></a><h2>Description</h2>
 <p>Controls a devectors reallocation policy.</p>
 <p>Models the <code class="computeroutput">GrowthPolicy</code> concept of the devector class. </p>
 <div class="refsect2">
-<a name="idp96003312"></a><h3>
+<a name="idp74811824"></a><h3>
 <a name="boost.double_ended.devector_growth_policytypes"></a><code class="computeroutput">devector_growth_policy</code> 
         public
        types</h3>
@@ -47,11 +47,11 @@
 </li></ol></div>
 </div>
 <div class="refsect2">
-<a name="idp96010736"></a><h3>
-<a name="idp41335312-bb"></a><code class="computeroutput">devector_growth_policy</code> public static functions</h3>
+<a name="idp74819312"></a><h3>
+<a name="idp24327232-bb"></a><code class="computeroutput">devector_growth_policy</code> public static functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">static</span> <span class="identifier">size_type</span> <a name="idp41335712-bb"></a><span class="identifier">new_capacity</span><span class="special">(</span><span class="identifier">size_type</span> capacity<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">static</span> <span class="identifier">size_type</span> <a name="idp24327632-bb"></a><span class="identifier">new_capacity</span><span class="special">(</span><span class="identifier">size_type</span> capacity<span class="special">)</span><span class="special">;</span></pre>
 <p><span class="bold"><strong>Returns</strong></span>: 4 times the old capacity or 16 if it's 0.</p>
 <p>
 </p>
@@ -76,7 +76,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">static</span> <span class="keyword">bool</span> <a name="idp41339552-bb"></a><span class="identifier">should_shrink</span><span class="special">(</span><span class="identifier">size_type</span> size<span class="special">,</span> <span class="identifier">size_type</span> capacity<span class="special">,</span> 
+<pre class="literallayout"><span class="keyword">static</span> <span class="keyword">bool</span> <a name="idp24331472-bb"></a><span class="identifier">should_shrink</span><span class="special">(</span><span class="identifier">size_type</span> size<span class="special">,</span> <span class="identifier">size_type</span> capacity<span class="special">,</span> 
                           <span class="identifier">size_type</span> small_buffer_size<span class="special">)</span><span class="special">;</span></pre>
 <p><span class="bold"><strong>Returns</strong></span>: true, if the contents fit in the small buffer.</p>
 <p>
