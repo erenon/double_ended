@@ -45,11 +45,10 @@ With this policy, when an element is pushed to a `devector` without capacity,
 memory for 16 elements will be allocated (`initial_size`), and the size of this
 storage is doubled (`growth_factor`) each time it runs out.
 
-When `devecotr::shrink_to_fit` is called, first the `should_shrink` method of the growth policy is consulted with.
-The actual shrink is executed only if this returns `true`.
-In this example the policy allows shrinking only if the contents of the `devector` can fit in the small buffer.
+When `devector::shrink_to_fit` is called, the `should_shrink` method of the growth policy is called, and shrinking happens only if it returns `true`.
+In this example, the policy allows shrinking only if the contents of the `devector` can fit in the small buffer.
 
-Among the several usecases, a simple one is reversing an input range in one go
+Among the several use cases, a simple one is reversing an input range in one go
 while doing as few allocations as possible. In the following example, input lines are pushed
 to the front of the buffer, thus automatically forming a reverse order.
 
